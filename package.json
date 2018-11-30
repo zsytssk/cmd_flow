@@ -11,6 +11,10 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "cmd",
+    "markdown"
+  ],
   "homepage": "https://github.com/zsytssk/cmd_flow",
   "bugs": {
     "url": "https://github.com/zsytssk/cmd_flow/issues"

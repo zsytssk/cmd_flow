@@ -50,7 +50,9 @@ const listeners: Listener[] = [];
 function listenerTerminal(terminal: vscode.Terminal) {
   (terminal as any).onDidWriteData(data => {
     for (const item of listeners) {
-      const { listener } = item;
+      const { listener, terminal } = item;
+      if (terminal.isClosed) {
+      }
       listener(data);
     }
   });

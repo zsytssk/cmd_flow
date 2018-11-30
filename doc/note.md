@@ -1,3 +1,10 @@
+## 2018-11-30 18:48:31
+
+- terminal 太多了 太乱了
+
+- 没有监听 terminal dispose 报错..
+  - await processExist(await terminal.processId) === false
+
 ## 2018-11-30 10:14:58
 
 - @ques api 不打开 文件, 解析文件...

@@ -20,14 +20,6 @@ echo 'hello4'
 ```json
 {
   "name": "test2",
-  "cwd": "C:\\Users\\zhangshiyang\\Desktop\\test",
-  "completeClose": true
+  "cwd": "C:\\Users\\zhangshiyang\\Desktop\\test"
 }
-```
-
-```bash
-echo 'hello1'
-echo 'hello2'
-echo 'hello3'
-echo 'hello4'
 ```

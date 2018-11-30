@@ -40,6 +40,6 @@ export async function main() {
     await runCmd(terminal, item.text, item.wait);
   }
   if (completeClose) {
-    terminal.dispose();
+    disposeTerminal(terminal);
   }
 }

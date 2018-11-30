@@ -20,6 +20,10 @@
 
 ## APi
 
+- terminal is not busy
+
+  - https://github.com/Microsoft/vscode/issues/20676
+
 - vscode
 - window
 

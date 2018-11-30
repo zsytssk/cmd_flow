@@ -9,20 +9,28 @@ import {
   TerminalOptions,
 } from 'vscode';
 
-const file =
-  'file:///D:/zsytssk/other/test/vscode-extension-samples-master/cmd-flow/doc/cmd.md';
-export async function getCmdList(): Promise<CmdSymbols> {
+export async function getCurCmdList(): Promise<CmdSymbols> {
   const cur_doc = window.activeTextEditor.document;
   if (cur_doc.languageId !== 'markdown') {
     return [];
   }
   return getCmdListFromDoc(cur_doc);
-  // const uri = Uri.parse(file);
-  // try {
-  //   const doc = await workspace.openTextDocument(uri);
-  // } catch (err) {
-  //   console.log(err);
-  // }
+}
+export async function getGlobalCmdList(): Promise<CmdSymbols> {
+  const file = workspace.getConfiguration().get('cmdFlow.global') as string;
+  if (!file) {
+    window.showErrorMessage('cant find setting for cmdFlow.global!');
+    return [];
+  }
+
+  try {
+    const uri = Uri.file(file);
+    const doc = await workspace.openTextDocument(uri);
+    return getCmdListFromDoc(doc);
+  } catch (err) {
+    window.showErrorMessage(err.message);
+    return [];
+  }
 }
 
 type Code = {
@@ -42,7 +50,6 @@ type Symbol = SymbolInformation & {
 
 export async function getCmdListFromDoc(doc): Promise<CmdSymbols> {
   const result: CmdSymbols = [];
-  await window.showTextDocument(doc);
   let symbols = await commands.executeCommand<Symbol[]>(
     'vscode.executeDocumentSymbolProvider',
     doc.uri,

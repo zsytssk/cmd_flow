@@ -1,9 +1,16 @@
 import { window } from 'vscode';
 import { runCmd, createTerminal, disposeTerminal } from './terminal';
-import { getCmdList } from './listCmd';
+import { getCurCmdList, getGlobalCmdList } from './listCmd';
 
-export async function main() {
-  const cmd_list = await getCmdList();
+type Type = 'global' | 'curFile';
+export async function main(type: Type) {
+  let cmd_list;
+
+  if (type === 'curFile') {
+    cmd_list = await getCurCmdList();
+  } else {
+    cmd_list = await getGlobalCmdList();
+  }
 
   if (!cmd_list.length) {
     window.showInformationMessage('cant find cmd_flow in this file!');

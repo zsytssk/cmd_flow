@@ -1,32 +1,27 @@
-# vscode-terminal-api-example
+## cmdFlow
 
-This sample provides several commands that demonstrates how to utilize the integrated terminal extension API. Access the commands through the command palette (F1).
+在 markdown 组织常用的 cmd 命令
 
-![demo](demo.png)
+## 使用
 
-## VS Code API
+- cmdFlow.curFile 解析当前打开文件有没有执行命令
+- cmdFlow.global 全局配置文件有没有执行命令
 
-### `vscode` module
+## 配置
 
-- [window.createTerminal](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.createTerminal)
-- [window.onDidChangeActiveTerminal](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.onDidChangeActiveTerminal)
-- [window.onDidCloseTerminal](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.onDidCloseTerminal)
-- [window.onDidOpenTerminal](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.onDidOpenTerminal)
-- [window.Terminal](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.Terminal)
-- [window.terminals](https://vscode-ext-docs.azurewebsites.net/api/references/vscode-api#window.terminals) 
+config 分为两部分 terminal 配置+执行命令
+terminal 设置是放在 json code 中,
+使用格式是 [TerminalOptions](https://code.visualstudio.com/docs/extensionAPI/vscode-api#TerminalOptions)
+额外的配置 completeClose,如果设置为 true 执行完成之后就自动关闭 terminal
 
-### Proposed API
+执行命令放在 bash 中, 通过行来分割, 使用 terminal sendText api.
+现在 vscode 没有提供 api 监听 terminal 的运行状态, 我只能监听 onDidWriteData,
+如果一定时间 terminal 没有 output, 就认为 terminal 是空闲状态, 就执行下一条命令
+wait(time: 单位秒)来表示命令需要等待的时间,你如果命令很长时间没有 output 建议将设置长些...
 
-- `window.createTerminalRenderer`
-- `window.TerminalRenderer`
+`"cmdFlow.global": string` 全局配置文件
 
-### Contribution Points
+## demos
 
-- [`contributes.commands`](https://code.visualstudio.com/docs/extensionAPI/extension-points#_contributescommands)
-
-## Running the Sample
-
-- Run `npm install` in terminal to install dependencies
-- Run the `Run Extension` target in the Debug View. This will:
-	- Start a task `npm: watch` to compile the code
-	- Run the extension in a new VS Code window
+![demo1](./images/demo1.png)
+![demo2](./images/demo2.png)

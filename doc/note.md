@@ -1,8 +1,25 @@
 ## 2018-11-30 10:14:58
 
+- @ques api 不打开 文件, 解析文件...
+
+  - FileSystemProvider.readFile
+
+- @toto
+
+  - icon + readme
+    - @ques gif
+  - 一个全局文件保存位置
+
+- @bug 有时候命令没有执行完成, 就进行下一条
+
 - @ques 如何不打开文件, 解析文件 - bookmark 如何做到的 - 记录在内存里面吗...
 
 - @ques cur Document
+
+- @ques 如何设置
+  - workbench.settings.editor
+  - workspace.getConfiguration
+  - Unknown configuration setting
 
 ## 2018-11-29 10:03:59
 

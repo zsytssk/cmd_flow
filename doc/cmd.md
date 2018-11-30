@@ -1,25 +1,30 @@
-## test1
+## start
 
 ```json
 {
-  "name": "test1",
-  "cwd": "C:\\Users\\zhangshiyang\\Desktop\\test",
+  "name": "start",
   "completeClose": true
 }
 ```
 
 ```bash
-echo 'hello1'
-echo 'hello2'
-echo 'hello3'
-echo 'hello4'
+echo 'hello1' #wait(1)
+echo 'hello2' #wait(1)
 ```
 
-## test2
+## test1
 
 ```json
 {
-  "name": "test2",
-  "cwd": "C:\\Users\\zhangshiyang\\Desktop\\test"
+  "name": "test1",
+  "cwd": "C:",
+  "completeClose": true
 }
+```
+
+```bash
+echo 'hello1' #wait(1)
+echo 'hello2' #wait(1)
+echo 'hello3' #wait(1)
+echo 'hello4' #wait(1)
 ```

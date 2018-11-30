@@ -4,8 +4,8 @@
 
 ## 使用 command
 
-- cmdFlow.curFile 解析当前打开文件有没有执行命令
-- cmdFlow.global 全局配置文件有没有执行命令
+- cmdFlow.curFile 解析当前打开文件, 执行命令
+- cmdFlow.global 解析全局配置文件, 执行命令
 
 ## 配置 config
 
@@ -25,5 +25,7 @@ wait(time: 单位秒)来表示命令需要等待的时间,你如果命令很长�
 
 json code terminal config: TerminalOptions
 bash code cmd
+
+[demo](./doc/cmd.md)
 ![demo1](./images/demo1.png)
 ![demo2](./images/demo2.png)

@@ -2,12 +2,12 @@
 
 在 markdown 组织常用的 cmd 命令
 
-## 使用
+## 使用 command
 
 - cmdFlow.curFile 解析当前打开文件有没有执行命令
 - cmdFlow.global 全局配置文件有没有执行命令
 
-## 配置
+## 配置 config
 
 config 分为两部分 terminal 配置+执行命令
 terminal 设置是放在 json code 中,
@@ -23,5 +23,7 @@ wait(time: 单位秒)来表示命令需要等待的时间,你如果命令很长�
 
 ## demos
 
+json code terminal config: TerminalOptions
+bash code cmd
 ![demo1](./images/demo1.png)
 ![demo2](./images/demo2.png)

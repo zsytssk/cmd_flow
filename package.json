@@ -1,15 +1,28 @@
 {
   "name": "vscode-cmd-flow",
-  "displayName": "vscode-cmd-flow",
-  "description": "abc",
-  "version": "0.0.1",
+  "displayName": "cmd-flow",
+  "description": "vscode extension run terminal cmd one by one",
+  "version": "0.0.3",
   "publisher": "zsytssk",
-  "engines": {
-    "vscode": "^1.26.0"
+  "author": {
+    "name": "zsytssk",
+    "email": "zsytssk@gmail.com"
   },
   "categories": [
     "Other"
   ],
+  "homepage": "https://github.com/zsytssk/cmd_flow",
+  "bugs": {
+    "url": "https://github.com/zsytssk/cmd_flow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zsytssk/cmd_flow.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.26.0"
+  },
   "activationEvents": [
     "onCommand:cmdFlow.run"
   ],

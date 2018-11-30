@@ -51,8 +51,6 @@ function listenerTerminal(terminal: vscode.Terminal) {
   (terminal as any).onDidWriteData(data => {
     for (const item of listeners) {
       const { listener, terminal } = item;
-      if (terminal.isClosed) {
-      }
       listener(data);
     }
   });

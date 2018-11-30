@@ -1,0 +1,41 @@
+{
+  "name": "vscode-cmd-flow",
+  "displayName": "vscode-cmd-flow",
+  "description": "abc",
+  "version": "0.0.1",
+  "publisher": "zsytssk",
+  "engines": {
+    "vscode": "^1.26.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:cmdFlow.run"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cmdFlow.run",
+        "title": "cmdFlow run"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "tslint ./src/*.ts",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.32",
+    "@types/node": "^6.0.40",
+    "mocha": "^2.3.3",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.4",
+    "vscode": "^1.1.17"
+  }
+}

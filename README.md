@@ -27,5 +27,6 @@ json code terminal config: TerminalOptions
 bash code cmd
 
 [demo](./doc/cmd.md)
+
 ![demo1](./images/demo1.png)
 ![demo2](./images/demo2.png)

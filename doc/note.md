@@ -1,5 +1,10 @@
 ## 2018-11-30 18:48:31
 
+- @ques 如何知道一条 terminal 已经完成
+  - 我所要的功能是一条命令后面继续执行下一条命令...
+
+* ProcessExecution onDidEndTaskProcess
+
 - terminal 太多了 太乱了
 
 - 没有监听 terminal dispose 报错..

@@ -1,19 +1,21 @@
-import { window } from 'vscode';
+import { window, workspace } from 'vscode';
 import { runCmd, createTerminal, disposeTerminal } from './terminal';
 import { getCurCmdList, getGlobalCmdList } from './listCmd';
 
-type Type = 'global' | 'curFile';
-export async function main(type: Type) {
-  let cmd_list;
+export async function showCmdList() {
+  const get_cur_list = getCurCmdList();
+  const get_global_list = getGlobalCmdList();
 
-  if (type === 'curFile') {
-    cmd_list = await getCurCmdList();
-  } else {
-    cmd_list = await getGlobalCmdList();
-  }
+  const cmd_list = await Promise.all([get_cur_list, get_global_list]).then(
+    list => {
+      return list[0].concat(list[1]);
+    },
+  );
 
   if (!cmd_list.length) {
-    window.showInformationMessage('cant find cmd_flow in this file!');
+    window.showInformationMessage(
+      'cant find cmd_flow in cur file and global file !',
+    );
     return;
   }
 
@@ -49,4 +51,14 @@ export async function main(type: Type) {
   if (completeClose) {
     disposeTerminal(terminal);
   }
+}
+
+export async function openGlobalFile() {
+  const file = workspace.getConfiguration().get('cmdFlow.global') as string;
+  if (!file) {
+    window.showErrorMessage('cant find setting for cmdFlow.global!');
+    return [];
+  }
+  const doc = await workspace.openTextDocument(file);
+  await window.showTextDocument(doc);
 }

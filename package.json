@@ -28,20 +28,20 @@
     "vscode": "^1.26.0"
   },
   "activationEvents": [
-    "onCommand:cmdFlow.curFile",
-    "onCommand:cmdFlow.global"
+    "onCommand:cmdFlow.show",
+    "onCommand:cmdFlow.openGlobal"
   ],
   "icon": "images/cmdFlow-icon.png",
   "main": "./out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "cmdFlow.global",
-        "title": "cmdFlow global"
+        "command": "cmdFlow.show",
+        "title": "cmdFlow: show"
       },
       {
-        "command": "cmdFlow.curFile",
-        "title": "cmdFlow curFile"
+        "command": "cmdFlow.openGlobal",
+        "title": "cmdFlow: open global file"
       }
     ],
     "configuration": {

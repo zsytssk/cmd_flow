@@ -10,8 +10,11 @@ import {
 } from 'vscode';
 
 export async function getCurCmdList(): Promise<CmdSymbols> {
+  if (!window.activeTextEditor) {
+    return [];
+  }
   const cur_doc = window.activeTextEditor.document;
-  if (cur_doc.languageId !== 'markdown') {
+  if (!cur_doc || cur_doc.languageId !== 'markdown') {
     return [];
   }
   return getCmdListFromDoc(cur_doc);
@@ -19,7 +22,7 @@ export async function getCurCmdList(): Promise<CmdSymbols> {
 export async function getGlobalCmdList(): Promise<CmdSymbols> {
   const file = workspace.getConfiguration().get('cmdFlow.global') as string;
   if (!file) {
-    window.showErrorMessage('cant find setting for cmdFlow.global!');
+    window.showInformationMessage('cant find setting for cmdFlow.global!');
     return [];
   }
 

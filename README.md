@@ -4,8 +4,9 @@
 
 ## setting
 
-`"cmdFlow.globalFile": string` 全局配置文件路径(global file path for cmd flow)
-`"cmdFlow.workspaceFile": string` workspace 中每一个文件夹配置文件相对路径(workspace file path relative to workspace folder)
+- `"cmdFlow.globalFile": string` 全局配置文件路径(global file path for cmd flow)
+
+- `"cmdFlow.workspaceFile": string` workspace 中每一个文件夹配置文件相对路径(workspace file path relative to workspace folder)
 
 ## command
 

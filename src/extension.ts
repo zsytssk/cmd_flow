@@ -1,17 +1,17 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { showCmdList, openGlobalFile } from './main';
+import { listCmd, listFile } from './main';
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('cmdFlow.show', async () => {
-      showCmdList();
+    vscode.commands.registerCommand('cmdFlow.listCmd', async () => {
+      listCmd();
     }),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('cmdFlow.openGlobal', async () => {
-      openGlobalFile();
+    vscode.commands.registerCommand('cmdFlow.listFile', async () => {
+      listFile();
     }),
   );
 }

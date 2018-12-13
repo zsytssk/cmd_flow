@@ -1,16 +1,10 @@
 import { window, workspace } from 'vscode';
 import { runCmd, createTerminal, disposeTerminal } from './terminal';
-import { getCurCmdList, getGlobalCmdList } from './listCmd';
+import { getCmdList } from './listCmd';
+import { getAllCmdFile } from './utils';
 
-export async function showCmdList() {
-  const get_cur_list = getCurCmdList();
-  const get_global_list = getGlobalCmdList();
-
-  const cmd_list = await Promise.all([get_cur_list, get_global_list]).then(
-    list => {
-      return list[0].concat(list[1]);
-    },
-  );
+export async function listCmd() {
+  const cmd_list = await getCmdList();
 
   if (!cmd_list.length) {
     window.showInformationMessage(
@@ -53,12 +47,21 @@ export async function showCmdList() {
   }
 }
 
-export async function openGlobalFile() {
-  const file = workspace.getConfiguration().get('cmdFlow.global') as string;
-  if (!file) {
-    window.showErrorMessage('cant find setting for cmdFlow.global!');
-    return [];
+export async function listFile() {
+  const files = await getAllCmdFile();
+  if (!files.length) {
+    window.showInformationMessage(
+      'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
+    );
   }
-  const doc = await workspace.openTextDocument(file);
+
+  const input_list = [];
+  for (let file of files) {
+    input_list.push(file);
+  }
+  const item = await window.showQuickPick(input_list, {
+    placeHolder: 'select file to open',
+  });
+  const doc = await workspace.openTextDocument(item);
   await window.showTextDocument(doc);
 }

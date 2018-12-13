@@ -2,7 +2,7 @@
   "name": "vscode-cmd-flow",
   "displayName": "cmd-flow",
   "description": "vscode extension run terminal cmd one by one",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "zsytssk",
   "author": {
     "name": "zsytssk",
@@ -28,30 +28,35 @@
     "vscode": "^1.26.0"
   },
   "activationEvents": [
-    "onCommand:cmdFlow.show",
-    "onCommand:cmdFlow.openGlobal"
+    "onCommand:cmdFlow.listCmd",
+    "onCommand:cmdFlow.listFile"
   ],
   "icon": "images/cmdFlow-icon.png",
   "main": "./out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "cmdFlow.show",
-        "title": "cmdFlow: show"
+        "command": "cmdFlow.listCmd",
+        "title": "cmdFlow: list all cmd"
       },
       {
-        "command": "cmdFlow.openGlobal",
-        "title": "cmdFlow: open global file"
+        "command": "cmdFlow.listFile",
+        "title": "cmdFlow: list all file"
       }
     ],
     "configuration": {
       "type": "object",
       "title": "cmdFlow",
       "properties": {
-        "cmdFlow.global": {
+        "cmdFlow.globalFile": {
           "type": "string",
           "default": "",
-          "description": "global file save cmdFlow"
+          "description": "cmdFlow global cmd file position"
+        },
+        "cmdFlow.workspaceFile": {
+          "type": "string",
+          "default": "",
+          "description": "cmdFlow workspace folder cmd file position"
         }
       }
     }

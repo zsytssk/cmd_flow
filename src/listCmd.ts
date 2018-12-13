@@ -9,31 +9,30 @@ import {
   TerminalOptions,
 } from 'vscode';
 
-export async function getCurCmdList(): Promise<CmdSymbols> {
-  if (!window.activeTextEditor) {
-    return [];
-  }
-  const cur_doc = window.activeTextEditor.document;
-  if (!cur_doc || cur_doc.languageId !== 'markdown') {
-    return [];
-  }
-  return getCmdListFromDoc(cur_doc);
-}
-export async function getGlobalCmdList(): Promise<CmdSymbols> {
-  const file = workspace.getConfiguration().get('cmdFlow.global') as string;
-  if (!file) {
-    window.showInformationMessage('cant find setting for cmdFlow.global!');
+import { getAllCmdFile } from './utils';
+
+export async function getCmdList(): Promise<CmdSymbols> {
+  let result = [];
+
+  const files = await getAllCmdFile();
+  if (!files.length) {
+    window.showInformationMessage(
+      'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
+    );
     return [];
   }
 
-  try {
-    const uri = Uri.file(file);
-    const doc = await workspace.openTextDocument(uri);
-    return getCmdListFromDoc(doc);
-  } catch (err) {
-    window.showErrorMessage(err.message);
-    return [];
+  for (let file of files) {
+    try {
+      const uri = Uri.file(file);
+      const doc = await workspace.openTextDocument(uri);
+      const cmd_list = await getCmdListFromDoc(doc);
+      result = result.concat(cmd_list);
+    } catch (err) {
+      console.log(err);
+    }
   }
+  return result;
 }
 
 type Code = {
@@ -57,6 +56,9 @@ export async function getCmdListFromDoc(doc): Promise<CmdSymbols> {
     'vscode.executeDocumentSymbolProvider',
     doc.uri,
   );
+  if (!symbols) {
+    return [];
+  }
 
   for (let item of symbols) {
     let { name } = item;
@@ -114,8 +116,12 @@ function getCmdInfoFromSymbol(doc: TextDocument, symbol: Symbol): CmdInfo {
   /** opt */
   if (opt_match) {
     const opt_str = opt_match[1];
-    const opt = JSON.parse(opt_str);
-    result.opt = opt;
+    try {
+      const opt = JSON.parse(opt_str);
+      result.opt = opt;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return result;

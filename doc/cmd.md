@@ -1,15 +1,13 @@
-## start
+## open-note-folder
 
 ```json
 {
-  "name": "start",
   "completeClose": true
 }
 ```
 
 ```bash
-echo 'hello1' #wait(1)
-echo 'hello2' #wait(1)
+start D:\zsytssk\other\coding\note
 ```
 
 ## test1

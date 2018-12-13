@@ -12,7 +12,7 @@ export function exists(path) {
 }
 
 export async function getAllCmdFile() {
-  const files = [];
+  let files = [];
 
   const { workspaceFolders } = workspace;
   const cmd_path = workspace
@@ -35,6 +35,13 @@ export async function getAllCmdFile() {
   if (global_file) {
     files.push(global_file);
   }
+
+  files = files.map(function(item, pos) {
+    return path.normalize(item);
+  });
+  files = files.filter(function(item, pos) {
+    return files.indexOf(item) == pos;
+  });
 
   return files;
 }

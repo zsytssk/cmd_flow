@@ -14,19 +14,20 @@ import { getAllCmdFile } from './utils';
 export async function getCmdList(): Promise<CmdSymbols> {
   let result = [];
 
-  const files = await getAllCmdFile();
-  if (!files.length) {
+  const file_info_list = await getAllCmdFile();
+  if (!file_info_list.length) {
     window.showInformationMessage(
       'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
     );
     return [];
   }
 
-  for (let file of files) {
+  for (let item of file_info_list) {
     try {
+      const { file, group } = item;
       const uri = Uri.file(file);
       const doc = await workspace.openTextDocument(uri);
-      const cmd_list = await getCmdListFromDoc(doc);
+      const cmd_list = await getCmdListFromDoc(doc, group);
       result = result.concat(cmd_list);
     } catch (err) {
       console.log(err);
@@ -35,14 +36,25 @@ export async function getCmdList(): Promise<CmdSymbols> {
   return result;
 }
 
-type Code = {
+export type Code = {
   text: string;
   wait: number;
 };
 
+type ExternOpt = {
+  completeClose?: boolean;
+  /** 是否隐藏 */
+  hide?: boolean;
+  /** 是否先执行其他命令 */
+  before?: string[];
+};
+
+export type CmdOPt = TerminalOptions & ExternOpt;
+
 type CmdSymbols = {
   name: string;
-  opt?: TerminalOptions & { completeClose?: boolean };
+  group: string;
+  opt?: CmdOPt;
   codes: Code[];
 }[];
 
@@ -50,7 +62,7 @@ type Symbol = SymbolInformation & {
   range: Range;
 };
 
-export async function getCmdListFromDoc(doc): Promise<CmdSymbols> {
+export async function getCmdListFromDoc(doc, group): Promise<CmdSymbols> {
   const result: CmdSymbols = [];
   let symbols = await commands.executeCommand<Symbol[]>(
     'vscode.executeDocumentSymbolProvider',
@@ -68,7 +80,7 @@ export async function getCmdListFromDoc(doc): Promise<CmdSymbols> {
     if (!codes.length && !opt) {
       continue;
     }
-    result.push({ name, codes, opt });
+    result.push({ name, codes, opt, group });
   }
 
   return result;

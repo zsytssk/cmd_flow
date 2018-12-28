@@ -1,7 +1,8 @@
-import { window, workspace } from 'vscode';
+import { window, workspace, QuickPickItem } from 'vscode';
 import { runCmd, createTerminal, disposeTerminal } from './terminal';
 import { getCmdList } from './listCmd';
 import { getAllCmdFile } from './utils';
+import { execCmd } from './run';
 
 export async function listCmd() {
   const cmd_list = await getCmdList();
@@ -13,10 +14,14 @@ export async function listCmd() {
     return;
   }
 
-  const input_list = [];
+  const input_list: QuickPickItem[] = [];
   for (let cmd of cmd_list) {
-    input_list.push(cmd.name);
+    input_list.push({
+      label: cmd.name,
+      description: cmd.group,
+    });
   }
+
   const item = await window.showQuickPick(input_list, {
     placeHolder: 'select cmd to run',
   });
@@ -30,21 +35,13 @@ export async function listCmd() {
   let default_opt = {
     name: 'cmd-flow',
   };
-  const { completeClose } = opt;
 
   const terminal_opt = {
     ...default_opt,
     ...opt,
   };
 
-  const terminal = createTerminal(terminal_opt);
-  terminal.show();
-  for (let item of codes) {
-    await runCmd(terminal, item.text, item.wait);
-  }
-  if (completeClose) {
-    disposeTerminal(terminal);
-  }
+  execCmd(terminal_opt, codes);
 }
 
 export async function listFile() {

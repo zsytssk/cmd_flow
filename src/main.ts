@@ -1,12 +1,22 @@
-import { window, workspace, QuickPickItem } from 'vscode';
-import { runCmd, createTerminal, disposeTerminal } from './terminal';
-import { getCmdList } from './listCmd';
-import { getAllCmdFile } from './utils';
-import { execCmd } from './run';
+import { QuickPickItem, window, workspace } from 'vscode';
+import { CmdManager, DefaultCmdManager } from './model/cmdManager';
+
+let cmd_manager = new CmdManager();
+
+async function init() {
+  // if (cmd_manager) {
+  //   return;
+  // }
+  cmd_manager = new CmdManager();
+  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
+  await behave.init();
+}
 
 export async function listCmd() {
-  const cmd_list = await getCmdList();
+  await init();
 
+  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
+  const cmd_list = behave.getAllCmd();
   if (!cmd_list.length) {
     window.showInformationMessage(
       'cant find cmd_flow in cur file and global file !',
@@ -15,10 +25,12 @@ export async function listCmd() {
   }
 
   const input_list: QuickPickItem[] = [];
-  for (let cmd of cmd_list) {
+  for (const cmd of cmd_list) {
+    const { name, group } = cmd;
+
     input_list.push({
-      label: cmd.name,
-      description: cmd.group,
+      description: group,
+      label: name,
     });
   }
 
@@ -31,30 +43,19 @@ export async function listCmd() {
     return;
   }
 
-  const { codes, opt = {} } = cur_cmd;
-  let default_opt = {
-    name: 'cmd-flow',
-  };
-
-  const terminal_opt = {
-    ...default_opt,
-    ...opt,
-  };
-
-  execCmd(terminal_opt, codes);
+  behave.execute(cur_cmd.id);
 }
 
 export async function listFile() {
-  const files = await getAllCmdFile();
-  if (!files.length) {
-    window.showInformationMessage(
-      'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
-    );
-  }
+  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
+  await behave.init();
+
+  const files = behave.getFiles();
 
   const input_list = [];
-  for (let file of files) {
-    input_list.push(file);
+  for (const file of files) {
+    const { name: label, file: description } = file;
+    input_list.push({ label, description });
   }
   const item = await window.showQuickPick(input_list, {
     placeHolder: 'select file to open',

@@ -1,70 +1,19 @@
-import {
-  commands,
-  SymbolInformation,
-  Uri,
-  workspace,
-  window,
-  TextDocument,
-  Range,
-  TerminalOptions,
-} from 'vscode';
+import { commands, Range, SymbolInformation, TextDocument } from 'vscode';
+import { code_reg_exp, name_reg_exp, opt_reg_exp } from './const';
 
-import { getAllCmdFile } from './utils';
-
-export async function getCmdList(): Promise<CmdSymbols> {
-  let result = [];
-
-  const file_info_list = await getAllCmdFile();
-  if (!file_info_list.length) {
-    window.showInformationMessage(
-      'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
-    );
-    return [];
-  }
-
-  for (let item of file_info_list) {
-    try {
-      const { file, group } = item;
-      const uri = Uri.file(file);
-      const doc = await workspace.openTextDocument(uri);
-      const cmd_list = await getCmdListFromDoc(doc, group);
-      result = result.concat(cmd_list);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  return result;
-}
-
-export type Code = {
-  text: string;
-  wait: number;
-};
-
-type ExternOpt = {
-  completeClose?: boolean;
-  /** 是否隐藏 */
-  hide?: boolean;
-  /** 是否先执行其他命令 */
-  before?: string[];
-};
-
-export type CmdOPt = TerminalOptions & ExternOpt;
-
-type CmdSymbols = {
+export type CmdSymbols = {
   name: string;
-  group: string;
-  opt?: CmdOPt;
-  codes: Code[];
-}[];
+  opt_str: string;
+  code_str: string;
+};
 
-type Symbol = SymbolInformation & {
+type SymbolInfo = SymbolInformation & {
   range: Range;
 };
 
-export async function getCmdListFromDoc(doc, group): Promise<CmdSymbols> {
-  const result: CmdSymbols = [];
-  let symbols = await commands.executeCommand<Symbol[]>(
+export async function getCmdListFromDoc(doc): Promise<CmdSymbols[]> {
+  const result: CmdSymbols[] = [];
+  const symbols = await commands.executeCommand<SymbolInfo[]>(
     'vscode.executeDocumentSymbolProvider',
     doc.uri,
   );
@@ -72,69 +21,41 @@ export async function getCmdListFromDoc(doc, group): Promise<CmdSymbols> {
     return [];
   }
 
-  for (let item of symbols) {
+  for (const item of symbols) {
     let { name } = item;
-    const name_match = name.match(nameRegExp);
+    const name_match = name.match(name_reg_exp);
     name = name_match[1];
-    const { codes, opt } = getCmdInfoFromSymbol(doc, item);
-    if (!codes.length && !opt) {
-      continue;
-    }
-    result.push({ name, codes, opt, group });
+    const { opt_str, code_str } = getCmdInfoFromSymbol(doc, item);
+    result.push({ name, opt_str, code_str });
   }
 
   return result;
 }
 
-const nameRegExp = /#+\s+([^#\s]+)/;
-const OptRegExp = /```json([^`]+)```/;
-const CodeRegExp = /```bash([^`]+)```/;
-const CodeItemRegExp = /([^\#+]*)(#wait\((\d+)\))*/;
-
-type CmdInfo = {
-  codes: Code[];
-  opt?: TerminalOptions;
+type CmdStrInfo = {
+  opt_str: string;
+  code_str: string;
 };
-function getCmdInfoFromSymbol(doc: TextDocument, symbol: Symbol): CmdInfo {
-  const result = {
-    codes: [],
-  } as CmdInfo;
-
+function getCmdInfoFromSymbol(
+  doc: TextDocument,
+  symbol: SymbolInfo,
+): CmdStrInfo {
   const { range } = symbol;
-  const text = doc.getText(range);
-  const opt_match = text.match(OptRegExp);
-  const code_match = text.match(CodeRegExp);
+  const symbol_text = doc.getText(range);
+  const opt_match = symbol_text.match(opt_reg_exp);
+  const code_match = symbol_text.match(code_reg_exp);
+
+  let code_str: string;
+  let opt_str: string;
 
   if (code_match) {
-    const code_str = code_match[1];
-    const code_str_arr = code_str.split(/\r?\n/g);
-    for (let item of code_str_arr) {
-      if (item === '') {
-        continue;
-      }
-      const match_item = item.match(CodeItemRegExp);
-      if (!match_item) {
-        continue;
-      }
-      const text = match_item[1];
-      const wait = Number(match_item[3]) || 0.5;
-      result.codes.push({
-        text,
-        wait,
-      });
-    }
+    code_str = code_match[1];
   }
 
   /** opt */
   if (opt_match) {
-    const opt_str = opt_match[1];
-    try {
-      const opt = JSON.parse(opt_str);
-      result.opt = opt;
-    } catch (err) {
-      console.log(err);
-    }
+    opt_str = opt_match[1];
   }
 
-  return result;
+  return { code_str, opt_str };
 }

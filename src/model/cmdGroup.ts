@@ -12,8 +12,8 @@ export class CmdGroup extends Model {
   public list: Cmd[] = [];
   public name: string;
   public file: string;
-  constructor() {
-    super();
+  constructor(top?: Model) {
+    super(top);
     this.addBehave(new DefaultCmdGroup(this));
   }
 }
@@ -29,7 +29,7 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
 
     try {
       for (const item of cmd_list) {
-        const cmd = new Cmd();
+        const cmd = new Cmd(model);
         const behave = cmd.getBehaveByCtor(DefaultCmd);
         behave.generate(item);
         list.push(cmd);
@@ -59,7 +59,20 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
     const { name, file } = this.model;
     return { name, file };
   }
-  public execute(id: string) {
+  public async executeByName(name: string) {
+    const { list } = this.model;
+    for (const item of list) {
+      const { name: item_name } = item;
+      if (name !== item_name) {
+        continue;
+      }
+      const behave = item.getBehaveByCtor(DefaultCmd);
+      await behave.execute();
+      return true;
+    }
+    return;
+  }
+  public async executeById(id: string) {
     const { list } = this.model;
     for (const item of list) {
       const { id: item_id } = item;
@@ -67,7 +80,7 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
         continue;
       }
       const behave = item.getBehaveByCtor(DefaultCmd);
-      behave.execute();
+      await behave.execute();
       return true;
     }
     return;

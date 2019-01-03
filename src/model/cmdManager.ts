@@ -19,7 +19,7 @@ export class DefaultCmdManager extends Behave<CmdManager> {
     const { list } = this.model;
     const files = await getAllCmdFile();
     for (const item of files) {
-      const group = new CmdGroup();
+      const group = new CmdGroup(this.model);
       const behave = group.getBehaveByCtor(DefaultCmdGroup);
       await behave.generate(item);
       list.push(group);
@@ -65,14 +65,15 @@ export class DefaultCmdManager extends Behave<CmdManager> {
     }
     return result;
   }
-  public execute(id: string) {
+  public async execute(id: string) {
     const { list } = this.model;
     for (const item of list) {
       const behave = item.getBehaveByCtor(DefaultCmdGroup);
-      const is_executed = behave.execute(id);
+      const is_executed = await behave.executeById(id);
       if (is_executed) {
-        return;
+        return true;
       }
     }
+    return false;
   }
 }

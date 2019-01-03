@@ -1,9 +1,10 @@
 import { TerminalOptions, window } from 'vscode';
 import { code_item_reg_exp } from '../const';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
+import { createTerminal, disposeTerminal, runCmd } from '../utils/terminal';
 import { generateId } from '../utils/utils';
+import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
 import { Behave, Model } from './dop';
-import { createTerminal, runCmd, disposeTerminal } from '../utils/terminal';
 
 export type ExternOpt = {
   completeClose?: boolean;
@@ -30,8 +31,8 @@ export class Cmd extends Model {
   public completeClose: boolean;
   public before?: string[];
   public codes?: Code[];
-  constructor() {
-    super();
+  constructor(top?: Model) {
+    super(top);
     this.addBehave(new DefaultCmd(this));
   }
 }
@@ -47,6 +48,7 @@ export class DefaultCmd extends Behave<Cmd> {
     try {
       opt = JSON.parse(opt_str);
     } catch (err) {
+      // tslint:disable-next-line: no-console
       console.log(err);
     }
     const { hide, before, completeClose } = opt;
@@ -87,19 +89,17 @@ export class DefaultCmd extends Behave<Cmd> {
     };
   }
   public async execute() {
-    const { codes, opt, completeClose } = this.model;
+    const { codes, opt, completeClose, before } = this.model;
     const terminal = createTerminal(opt);
     terminal.show();
 
-    setInterval(() => {
-      terminal.processId.then(processId => {
-        if (processId) {
-          console.log(processId);
-        } else {
-          window.showInformationMessage('Terminal does not have a process ID');
-        }
-      });
-    }, 300);
+    if (before) {
+      const top: CmdGroup = this.model.closest();
+      const top_behave = top.getBehaveByCtor(DefaultCmdGroup);
+      for (const item_name of before) {
+        await top_behave.executeByName(item_name);
+      }
+    }
 
     for (const code of codes) {
       const { text, wait } = code;

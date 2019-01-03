@@ -1,6 +1,7 @@
 export class Model {
-  constructor(...behaves: Behave[]) {
-    this.addBehave(...behaves);
+  private top: Model;
+  constructor(top?: Model) {
+    this.top = top;
   }
   private behaves: Behave[] = [];
   public addBehave(...behaves: Behave[]) {
@@ -23,6 +24,19 @@ export class Model {
       }
     }
     return;
+  }
+  public closest<T extends Model>(ctor?: Ctor<T>) {
+    const { top } = this;
+    if (!top) {
+      return;
+    }
+    if (!ctor) {
+      return top;
+    }
+    if (top instanceof ctor) {
+      return top;
+    }
+    return top.closest(ctor);
   }
 }
 

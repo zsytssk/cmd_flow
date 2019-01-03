@@ -2,7 +2,7 @@
 
 ```json
 {
-  "completeClose": true
+    "completeClose": true
 }
 ```
 
@@ -14,9 +14,9 @@ start D:\zsytssk\other\coding\note
 
 ```json
 {
-  "name": "test1",
-  "cwd": "C:",
-  "completeClose": true
+    "name": "test1",
+    "cwd": "C:",
+    "completeClose": true
 }
 ```
 

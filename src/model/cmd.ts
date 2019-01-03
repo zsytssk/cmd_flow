@@ -1,8 +1,9 @@
-import { TerminalOptions } from 'vscode';
+import { TerminalOptions, window } from 'vscode';
 import { code_item_reg_exp } from '../const';
-import { CmdSymbols } from '../listCmd';
-import { generateId } from '../utils';
+import { CmdSymbols } from '../utils/getCmdListFromDoc';
+import { generateId } from '../utils/utils';
 import { Behave, Model } from './dop';
+import { createTerminal, runCmd, disposeTerminal } from '../utils/terminal';
 
 export type ExternOpt = {
   completeClose?: boolean;
@@ -26,6 +27,7 @@ export class Cmd extends Model {
   public name: string;
   public opt: TerminalOptions;
   public hide: boolean;
+  public completeClose: boolean;
   public before?: string[];
   public codes?: Code[];
   constructor() {
@@ -47,30 +49,32 @@ export class DefaultCmd extends Behave<Cmd> {
     } catch (err) {
       console.log(err);
     }
-    const { hide, before } = opt;
+    const { hide, before, completeClose } = opt;
 
-    const code_str_arr = code_str.split(/\r?\n/g);
-    for (const item of code_str_arr) {
-      if (item === '') {
-        continue;
+    if (code_str) {
+      const code_str_arr = code_str.split(/\r?\n/g);
+      for (const item of code_str_arr) {
+        if (item === '') {
+          continue;
+        }
+        const match_item = item.match(code_item_reg_exp);
+        if (!match_item) {
+          continue;
+        }
+        const text = match_item[1];
+        const wait = Number(match_item[3]) || 0.5;
+        codes.push({
+          text,
+          wait,
+        });
       }
-      const match_item = item.match(code_item_reg_exp);
-      if (!match_item) {
-        continue;
-      }
-      const text = match_item[1];
-      const wait = Number(match_item[3]) || 0.5;
-      codes.push({
-        text,
-        wait,
-      });
     }
 
     opt = {
       name,
       ...opt,
     };
-    this.setData({ id, name, codes, opt, hide, before });
+    this.setData({ id, name, codes, opt, hide, before, completeClose });
   }
   public getInfo(): CmdInfo {
     const { id, name, hide } = this.model;
@@ -81,5 +85,29 @@ export class DefaultCmd extends Behave<Cmd> {
       id,
       name,
     };
+  }
+  public async execute() {
+    const { codes, opt, completeClose } = this.model;
+    const terminal = createTerminal(opt);
+    terminal.show();
+
+    setInterval(() => {
+      terminal.processId.then(processId => {
+        if (processId) {
+          console.log(processId);
+        } else {
+          window.showInformationMessage('Terminal does not have a process ID');
+        }
+      });
+    }, 300);
+
+    for (const code of codes) {
+      const { text, wait } = code;
+      await runCmd(terminal, text, wait);
+    }
+
+    if (completeClose) {
+      disposeTerminal(terminal);
+    }
   }
 }

@@ -1,30 +1,14 @@
+## 2019-01-02 18:40:38
+
+-   @ques 能不能监听 onData 中数据的变化来判断任务是否终止??
+-   @ques 能不能自己创建一个 terminalRender
+
 ## 2018-12-29 16:07:11
 
-```ts
-const code_str_arr = code_str.split(/\r?\n/g);
-for (const item of code_str_arr) {
-    if (item === '') {
-        continue;
-    }
-    const match_item = item.match(code_item_reg_exp);
-    if (!match_item) {
-        continue;
-    }
-    const text = match_item[1];
-    const wait = Number(match_item[3]) || 0.5;
-    result.codes.push({
-        text,
-        wait,
-    });
-}
+-   https://code.visualstudio.com/api/references/vscode-api#tasks
 
-try {
-    const opt = JSON.parse(opt_str);
-    result.opt = opt;
-} catch (err) {
-    console.log(err);
-}
-```
+-   CmdManager init status
+    -   no_init in_init inited
 
 ## 2018-12-29 11:51:03
 

@@ -1,5 +1,5 @@
 import { commands, Range, SymbolInformation, TextDocument } from 'vscode';
-import { code_reg_exp, name_reg_exp, opt_reg_exp } from './const';
+import { code_reg_exp, name_reg_exp, opt_reg_exp } from '../const';
 
 export type CmdSymbols = {
   name: string;

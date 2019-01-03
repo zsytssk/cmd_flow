@@ -1,6 +1,6 @@
 import { Uri, workspace } from 'vscode';
-import { getCmdListFromDoc } from '../listCmd';
-import { FileInfo } from '../utils';
+import { getCmdListFromDoc } from '../utils/getCmdListFromDoc';
+import { FileInfo } from '../utils/utils';
 import { Cmd, CmdInfo, DefaultCmd } from './cmd';
 import { Behave, Model } from './dop';
 
@@ -27,17 +27,21 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
     const doc = await workspace.openTextDocument(uri);
     const cmd_list = await getCmdListFromDoc(doc);
 
-    for (const item of cmd_list) {
-      const cmd = new Cmd();
-      const behave = cmd.getBehaveByCtor(DefaultCmd);
-      behave.generate(item);
-      list.push(cmd);
+    try {
+      for (const item of cmd_list) {
+        const cmd = new Cmd();
+        const behave = cmd.getBehaveByCtor(DefaultCmd);
+        behave.generate(item);
+        list.push(cmd);
+      }
+      this.setData({ name, file });
+    } catch (error) {
+      console.log(error);
     }
-    this.setData({ name, file });
   }
   public getAllCmd(): GroupCmdInfo[] {
     const result = [];
-    const { list } = this.model;
+    const { list, name: group } = this.model;
     for (const item of list) {
       const behave = item.getBehaveByCtor(DefaultCmd);
       const info = behave.getInfo();
@@ -46,7 +50,7 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
       }
       result.push({
         ...info,
-        group: this.name,
+        group,
       });
     }
     return result;
@@ -54,5 +58,18 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
   public getFileInfo(): FileInfo {
     const { name, file } = this.model;
     return { name, file };
+  }
+  public execute(id: string) {
+    const { list } = this.model;
+    for (const item of list) {
+      const { id: item_id } = item;
+      if (item_id !== id) {
+        continue;
+      }
+      const behave = item.getBehaveByCtor(DefaultCmd);
+      behave.execute();
+      return true;
+    }
+    return;
   }
 }

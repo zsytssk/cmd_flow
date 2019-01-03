@@ -1,22 +1,11 @@
 import { QuickPickItem, window, workspace } from 'vscode';
 import { CmdManager, DefaultCmdManager } from './model/cmdManager';
 
-let cmd_manager = new CmdManager();
-
-async function init() {
-  // if (cmd_manager) {
-  //   return;
-  // }
-  cmd_manager = new CmdManager();
-  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
-  await behave.init();
-}
+const cmd_manager = new CmdManager();
 
 export async function listCmd() {
-  await init();
-
   const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
-  const cmd_list = behave.getAllCmd();
+  const cmd_list = await behave.getAllCmd();
   if (!cmd_list.length) {
     window.showInformationMessage(
       'cant find cmd_flow in cur file and global file !',
@@ -48,9 +37,7 @@ export async function listCmd() {
 
 export async function listFile() {
   const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
-  await behave.init();
-
-  const files = behave.getFiles();
+  const files = await behave.getFiles();
 
   const input_list = [];
   for (const file of files) {
@@ -60,6 +47,14 @@ export async function listFile() {
   const item = await window.showQuickPick(input_list, {
     placeHolder: 'select file to open',
   });
-  const doc = await workspace.openTextDocument(item);
+  const index = files.findIndex(item_file => {
+    return item.label === item_file.name;
+  });
+  if (index === -1) {
+    return;
+  }
+
+  const { file } = files[index];
+  const doc = await workspace.openTextDocument(file);
   await window.showTextDocument(doc);
 }

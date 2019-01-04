@@ -1,3 +1,12 @@
+-   @note cmd_flow
+
+    -   用 task api, 去做某些任务
+        -   task api 能进入 xshell 吗
+    -   或者用 node 脚本执行命令
+    -   自定义一些命令 open file folder ...
+        -   用 node 脚本
+    -   像 task 一样直接编辑怎么处理
+
 ## 2019-01-02 18:40:38
 
 -   @ques 能不能监听 onData 中数据的变化来判断任务是否终止??

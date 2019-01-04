@@ -15,7 +15,6 @@ start D:\zsytssk\other\coding\note
 ```json
 {
     "name": "test1",
-    "cwd": "C:",
     "completeClose": true
 }
 ```

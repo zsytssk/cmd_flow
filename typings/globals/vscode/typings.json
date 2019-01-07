@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/Microsoft/vscode/master/src/vs/vscode.d.ts",
+    "raw": "github:Microsoft/vscode/src/vs/vscode.d.ts#master",
+    "typings": "https://raw.githubusercontent.com/Microsoft/vscode/master/src/vs/vscode.d.ts"
+  }
+}

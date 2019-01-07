@@ -1,0 +1,5 @@
+{
+  "globalDependencies": {
+    "vscode": "github:Microsoft/vscode/src/vs/vscode.d.ts#master"
+  }
+}

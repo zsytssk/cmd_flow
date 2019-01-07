@@ -1,6 +1,7 @@
-import { TerminalOptions, window } from 'vscode';
+import { TerminalOptions } from 'vscode';
 import { code_item_reg_exp } from '../const';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
+import { runTask } from '../utils/task';
 import { createTerminal, disposeTerminal, runCmd } from '../utils/terminal';
 import { generateId } from '../utils/utils';
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
@@ -12,6 +13,7 @@ export type ExternOpt = {
   hide?: boolean;
   /** 是否先执行其他命令 */
   before?: string[];
+  is_task?: boolean;
 };
 
 export type CmdOPt = TerminalOptions & ExternOpt;
@@ -26,6 +28,7 @@ export type CmdInfo = { id: string; name: string };
 export class Cmd extends Model {
   public id: string;
   public name: string;
+  public is_task: boolean;
   public opt: TerminalOptions;
   public hide: boolean;
   public completeClose: boolean;
@@ -51,7 +54,7 @@ export class DefaultCmd extends Behave<Cmd> {
       // tslint:disable-next-line: no-console
       console.log(err);
     }
-    const { hide, before, completeClose } = opt;
+    const { hide, before, completeClose, is_task } = opt;
 
     if (code_str) {
       const code_str_arr = code_str.split(/\r?\n/g);
@@ -76,7 +79,16 @@ export class DefaultCmd extends Behave<Cmd> {
       name,
       ...opt,
     };
-    this.setData({ id, name, codes, opt, hide, before, completeClose });
+    this.setData({
+      id,
+      name,
+      is_task,
+      codes,
+      opt,
+      hide,
+      before,
+      completeClose,
+    });
   }
   public getInfo(): CmdInfo {
     const { id, name, hide } = this.model;
@@ -89,9 +101,7 @@ export class DefaultCmd extends Behave<Cmd> {
     };
   }
   public async execute() {
-    const { codes, opt, completeClose, before } = this.model;
-    const terminal = createTerminal(opt);
-    terminal.show();
+    const { codes, opt, completeClose, before, is_task } = this.model;
 
     if (before) {
       const top: CmdGroup = this.model.closest();
@@ -100,10 +110,19 @@ export class DefaultCmd extends Behave<Cmd> {
         await top_behave.executeByName(item_name);
       }
     }
+    if (is_task) {
+      for (const code of codes) {
+        const { text } = code;
+        await runTask(text, opt);
+      }
+      return;
+    }
 
+    const terminal = createTerminal(opt);
+    terminal.show();
     for (const code of codes) {
       const { text, wait } = code;
-      await runCmd(terminal, text, wait);
+      await runCmd(text, terminal, wait);
     }
 
     if (completeClose) {

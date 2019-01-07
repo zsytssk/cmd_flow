@@ -12,8 +12,8 @@ export function disposeTerminal(terminal: vscode.Terminal) {
 }
 
 export function runCmd(
-  terminal: vscode.Terminal,
   cmd: string,
+  terminal: vscode.Terminal,
   wait: number,
 ): Promise<void> {
   return new Promise((resolve, reject) => {

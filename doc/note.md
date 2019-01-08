@@ -9,8 +9,14 @@
 
 ## 2019-01-08 17:08:06
 
+-   @ques terminal 最好带上 group
+
 -   '[0K[32G', '[0K[3G[?25h', '[0K[?25h'
     这些东西是不是乱码了
+
+    -   win10 linux osx 的 terminal end string
+
+-   @ques 不知道外面 dispose terminal
 
 ## 2019-01-04 17:05:42
 

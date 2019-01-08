@@ -58,3 +58,8 @@ export async function listFile() {
   const doc = await workspace.openTextDocument(file);
   await window.showTextDocument(doc);
 }
+
+process.on('unhandledRejection', reason => {
+  console.log('unhandledRejection');
+  console.log(reason);
+});

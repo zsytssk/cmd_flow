@@ -27,7 +27,7 @@ export function createTerminal(opt: vscode.TerminalOptions) {
 
 export function disposeTerminal(terminal: vscode.Terminal) {
   const len = terminal_list.length;
-  for (let i = len - 1; i >= 0; i++) {
+  for (let i = len - 1; i >= 0; i--) {
     const { terminal: terminal_item } = terminal_list[i];
     if (terminal !== terminal_item) {
       continue;
@@ -41,8 +41,14 @@ export function getIdleTerminalByName(terminal_name: string) {
   if (!terminal_name) {
     return;
   }
+  const terminals = vscode.window.terminals;
   for (const item of terminal_list) {
     const { terminal, status } = item;
+    if (!terminals || terminals.indexOf(terminal) === -1) {
+      disposeTerminal(terminal);
+      return;
+    }
+
     const { name } = terminal;
     if (status !== 'idle') {
       continue;
@@ -104,9 +110,12 @@ function watchTerminal(terminal: vscode.Terminal) {
       }
       log += data;
       clearTimeout(timeout_check_idle);
+      terminal.processId.then(id => {
+        console.log(id);
+      });
       timeout_check_idle = setTimeout(() => {
         if (!isLastStr(log)) {
-          // log = '';
+          log = '';
           return;
         }
         item.status = 'idle';
@@ -126,6 +135,9 @@ function isLastStr(str: string) {
   }
   for (const end of terminal_end_str) {
     const index = str.lastIndexOf(end);
+    if (index === -1) {
+      continue;
+    }
     if (index + end.length === str.length) {
       return true;
     }

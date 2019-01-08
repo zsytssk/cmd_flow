@@ -102,9 +102,9 @@ export class DefaultCmd extends Behave<Cmd> {
   }
   public async execute() {
     const { codes, opt, completeClose, before, is_task } = this.model;
+    const top: CmdGroup = this.model.closest();
 
     if (before) {
-      const top: CmdGroup = this.model.closest();
       const top_behave = top.getBehaveByCtor(DefaultCmdGroup);
       for (const item_name of before) {
         await top_behave.executeByName(item_name);
@@ -118,6 +118,7 @@ export class DefaultCmd extends Behave<Cmd> {
       return;
     }
 
+    opt.name = `${top.name} - ${opt.name}`;
     const terminal = createTerminal(opt);
     terminal.show();
     for (const code of codes) {

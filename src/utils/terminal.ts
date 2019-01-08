@@ -1,14 +1,57 @@
 import * as vscode from 'vscode';
+import { terminal_end_str } from '../const';
+
+type Status = 'busy' | 'idle';
+type WaitFun = () => void;
+type Item = {
+  terminal: vscode.Terminal;
+  status: Status;
+  wait_list: WaitFun[];
+};
+const terminal_list: Item[] = [];
 
 export function createTerminal(opt: vscode.TerminalOptions) {
-  const terminal = vscode.window.createTerminal(opt);
-  listenerTerminal(terminal);
+  const { name } = opt;
+  let terminal = getIdleTerminalByName(name);
+  if (!terminal) {
+    terminal = vscode.window.createTerminal(opt);
+    terminal_list.push({
+      terminal,
+      status: 'idle',
+      wait_list: [],
+    });
+    watchTerminal(terminal);
+  }
   return terminal;
 }
 
 export function disposeTerminal(terminal: vscode.Terminal) {
-  offListener(terminal);
-  terminal.dispose();
+  const len = terminal_list.length;
+  for (let i = len - 1; i >= 0; i++) {
+    const { terminal: terminal_item } = terminal_list[i];
+    if (terminal !== terminal_item) {
+      continue;
+    }
+    terminal.dispose();
+    terminal_list.splice(i, 1);
+  }
+}
+
+export function getIdleTerminalByName(terminal_name: string) {
+  if (!terminal_name) {
+    return;
+  }
+  for (const item of terminal_list) {
+    const { terminal, status } = item;
+    const { name } = terminal;
+    if (status !== 'idle') {
+      continue;
+    }
+    if (name !== terminal_name) {
+      continue;
+    }
+    return terminal;
+  }
 }
 
 export function runCmd(
@@ -17,62 +60,74 @@ export function runCmd(
   wait: number,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    for (const item of terminal_list) {
+      const { terminal: terminal_item } = item;
+      if (terminal !== terminal_item) {
+        continue;
+      }
+      item.status = 'busy';
+    }
     terminal.sendText(cmd);
-    waitTerminalIdle(terminal, wait).then(() => {
+    waitTerminalFinish(terminal, wait).then(() => {
       resolve();
     });
   });
 }
 
-function waitTerminalIdle(
+function waitTerminalFinish(
   terminal: vscode.Terminal,
   wait: number,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    let idle_timeout;
-    const listener = data => {
-      clearTimeout(idle_timeout);
-      idle_timeout = setTimeout(() => {
+    for (const item of terminal_list) {
+      const { terminal: terminal_item, status, wait_list } = item;
+      if (terminal !== terminal_item) {
+        continue;
+      }
+      if (status === 'idle') {
         resolve();
-        offListener(terminal, listener);
-      }, wait * 1000);
-    };
-    addListener(terminal, listener);
+      }
+      wait_list.push(resolve);
+    }
   });
 }
 
-type Listener = {
-  terminal: vscode.Terminal;
-  listener: Function;
-};
-const listeners: Listener[] = [];
-
-function listenerTerminal(terminal: vscode.Terminal) {
+/** 在获得数据过后0.1秒检测最后一个字符是不是terminal_end_str, 如果是就是idle */
+function watchTerminal(terminal: vscode.Terminal) {
+  let timeout_check_idle;
+  let log = '';
   (terminal as any).onDidWriteData(data => {
-    for (const item of listeners) {
-      const { listener } = item;
-      console.log(data);
-      listener(data);
+    for (const item of terminal_list) {
+      const { terminal: terminal_item } = item;
+      if (terminal !== terminal_item) {
+        continue;
+      }
+      log += data;
+      clearTimeout(timeout_check_idle);
+      timeout_check_idle = setTimeout(() => {
+        if (!isLastStr(log)) {
+          // log = '';
+          return;
+        }
+        item.status = 'idle';
+        const { wait_list } = item;
+        for (const fun of wait_list) {
+          fun();
+        }
+        item.wait_list = [];
+      }, 0.1);
     }
   });
 }
 
-function offListener(terminal: vscode.Terminal, listener?: Function) {
-  for (let len = listeners.length, i = len - 1; i >= 0; i--) {
-    const { listener: i_listener, terminal: i_terminal } = listeners[i];
-    if (terminal !== i_terminal) {
-      continue;
-    }
-    if (listener && i_listener !== listener) {
-      continue;
-    }
-    listeners.splice(i, 1);
+function isLastStr(str: string) {
+  if (!str || str.length === 0) {
+    return;
   }
-}
-
-function addListener(terminal: vscode.Terminal, listener: Function) {
-  listeners.push({
-    terminal,
-    listener,
-  });
+  for (const end of terminal_end_str) {
+    const index = str.lastIndexOf(end);
+    if (index + end.length === str.length) {
+      return true;
+    }
+  }
 }

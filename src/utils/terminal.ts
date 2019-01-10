@@ -3,6 +3,7 @@ import { isNormalCompleteLog, isLastStr } from './utils';
 
 type Status = 'busy' | 'idle';
 type WaitItem = {
+  cmd: string;
   wait_str: string;
   fun: () => void;
 };
@@ -13,17 +14,20 @@ type Item = {
 };
 const terminal_list: Item[] = [];
 
-export function createTerminal(opt: vscode.TerminalOptions) {
+export function createTerminal(
+  opt: vscode.TerminalOptions,
+) {
   const { name } = opt;
   let terminal = getIdleTerminalByName(name);
   if (!terminal) {
     terminal = vscode.window.createTerminal(opt);
-    terminal_list.unshift({
+    const item: Item = {
       terminal,
       status: 'idle',
       wait_info: undefined,
-    });
-    watchTerminal(terminal);
+    };
+    terminal_list.unshift(item);
+    watchTerminal(item);
   }
   return terminal;
 }
@@ -40,7 +44,9 @@ export function disposeTerminal(terminal: vscode.Terminal) {
   }
 }
 
-export function getIdleTerminalByName(terminal_name: string) {
+export function getIdleTerminalByName(
+  terminal_name: string,
+) {
   if (!terminal_name) {
     return;
   }
@@ -95,67 +101,79 @@ export function runCmd(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     for (const item of terminal_list) {
-      const { terminal: terminal_item } = item;
-      if (terminal !== terminal_item) {
-        continue;
-      }
-      item.status = 'busy';
-    }
-    terminal.sendText(cmd);
-    waitTerminalFinish(terminal, wait_time, wait_str).then(() => {
-      resolve();
-    });
-  });
-}
-
-function waitTerminalFinish(
-  terminal: vscode.Terminal,
-  wait_time: number,
-  wait_str: string,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    for (const item of terminal_list) {
       const { terminal: terminal_item, status } = item;
       if (terminal !== terminal_item) {
         continue;
       }
-      if (status === 'idle') {
-        return resolve();
+      terminal.sendText(cmd);
+      if (terminal !== terminal_item) {
+        continue;
       }
       item.wait_info = {
         fun: resolve,
         wait_str,
+        cmd,
       };
     }
   });
 }
 
 /** 在获得数据过后0.1秒检测最后一个字符是不是terminal_end_str, 如果是就是idle */
-function watchTerminal(terminal: vscode.Terminal) {
+function watchTerminal(item: Item) {
   let timeout_check_idle;
   let log = '';
+  const { terminal } = item;
   (terminal as any).onDidWriteData(data => {
-    for (const item of terminal_list) {
-      const { terminal: terminal_item } = item;
-      if (terminal !== terminal_item) {
-        continue;
-      }
-      log = data;
-      clearTimeout(timeout_check_idle);
-      timeout_check_idle = setTimeout(() => {
-        const { fun, wait_str } = item.wait_info;
-        if (
-          (!wait_str && isNormalCompleteLog(log)) ||
-          (wait_str && isLastStr(log, wait_str))
-        ) {
-          item.status = 'idle';
-          item.wait_info = undefined;
-          fun();
-          return;
-        }
+    const { wait_info } = item;
+    log += data;
 
-        log = '';
-      }, 0.1);
+    if (!wait_info) {
+      return;
     }
+
+    const { fun, wait_str, cmd } = wait_info;
+    /** 只有当前运行的cmd, 出现在terminal的log中, 才开始监听 */
+    if (item.status === 'idle') {
+      if (!logHasStr(log, cmd)) {
+        return;
+      }
+      item.status = 'busy';
+    }
+
+    clearTimeout(timeout_check_idle);
+    timeout_check_idle = setTimeout(() => {
+      if (item.status === 'idle' || !isEnd(log, wait_str)) {
+        log = '';
+        return;
+      }
+
+      item.status = 'idle';
+      item.wait_info = undefined;
+      fun();
+    }, 0.1);
   });
+}
+
+function isEnd(log: string, wait_str: string) {
+  if (
+    (!wait_str && isNormalCompleteLog(log)) ||
+    (wait_str && isLastStr(log, wait_str))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** 检测log中是否包含test_str被空格分离的所有item
+ * 因为:> 命令行中输出字符会在中间加上一大堆乱七八糟的东西
+ * 我也不知道是什么鬼, 也许是高亮的提示...
+ */
+function logHasStr(log: string, test_str: string) {
+  const str_arr = test_str.split(' ');
+  for (const item of str_arr) {
+    if (log.indexOf(item) === -1) {
+      return false;
+    }
+  }
+  return true;
 }

@@ -1,4 +1,13 @@
--   @ques 如果没有指明 cmd 的 cwd 能不能直接使用 workspace folder 作为
+-   @todo 测试多条数据 git acpp
+
+-   @ques 如果真是我想的那样怎么处理....
+
+    -   开始第一条命令开始的时候才是开始
+    -   ## 我怎么知道第一条命令开始???
+
+-   好像如果是没有结束 光标都会在另一行
+
+*   @ques 如果没有指明 cmd 的 cwd 能不能直接使用 workspace folder 作为
 
 -   @ques 要不要提示同名的 item
 
@@ -192,10 +201,9 @@ https://github.com/patrys/vscode-code-outline/blob/master/src/symbolOutline.ts
 -   @ques vscode indent space...
 
 ```ts
-let d = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-    'vscode.executeDocumentSymbolProvider',
-    list,
-);
+let d = await vscode.commands.executeCommand<
+    vscode.SymbolInformation[]
+>('vscode.executeDocumentSymbolProvider', list);
 ```
 
 -   @ques 必须要打开我才能 获得 吗 SymbolProvider

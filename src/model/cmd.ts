@@ -2,8 +2,17 @@ import { TerminalOptions } from 'vscode';
 import { code_reg_exp, code_item_reg_exp } from '../const';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
 import { runTask } from '../utils/task';
-import { createTerminal, disposeTerminal, runCmd } from '../utils/terminal';
-import { generateId, analysisCodeStr, Code } from '../utils/utils';
+import {
+  createTerminal,
+  disposeTerminal,
+  runCmd,
+} from '../utils/terminal';
+import {
+  generateId,
+  analysisCodeStr,
+  Code,
+  sleep,
+} from '../utils/utils';
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
 import { Behave, Model } from './dop';
 
@@ -28,7 +37,7 @@ export class Cmd extends Model {
   public is_task: boolean;
   public opt: TerminalOptions;
   public hide: boolean;
-  public completeClose: boolean;
+  public completeClose: boolean | number;
   public before?: string[];
   public codes?: Code[];
   constructor(top?: Model) {
@@ -83,11 +92,19 @@ export class DefaultCmd extends Behave<Cmd> {
     };
   }
   public async execute() {
-    const { codes, opt, completeClose, before, is_task } = this.model;
+    const {
+      codes,
+      opt,
+      completeClose,
+      before,
+      is_task,
+    } = this.model;
     const top: CmdGroup = this.model.closest();
 
     if (before) {
-      const top_behave = top.getBehaveByCtor(DefaultCmdGroup);
+      const top_behave = top.getBehaveByCtor(
+        DefaultCmdGroup,
+      );
       for (const item_name of before) {
         await top_behave.executeByName(item_name);
       }
@@ -108,8 +125,12 @@ export class DefaultCmd extends Behave<Cmd> {
       await runCmd(text, terminal, wait_time, wait_str);
     }
 
-    if (completeClose) {
-      disposeTerminal(terminal);
+    if (!completeClose) {
+      return;
     }
+    if (typeof completeClose === 'number') {
+      await sleep(completeClose);
+    }
+    disposeTerminal(terminal);
   }
 }

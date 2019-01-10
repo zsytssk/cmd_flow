@@ -37,6 +37,7 @@ export class Cmd extends Model {
   public is_task: boolean;
   public opt: TerminalOptions;
   public hide: boolean;
+  public no_output: boolean;
   public completeClose: boolean | number;
   public before?: string[];
   public codes?: Code[];
@@ -121,8 +122,7 @@ export class DefaultCmd extends Behave<Cmd> {
     const terminal = createTerminal(opt);
     terminal.show();
     for (const code of codes) {
-      const { text, wait_time, wait_str } = code;
-      await runCmd(text, terminal, wait_time, wait_str);
+      await runCmd(terminal, code);
     }
 
     if (!completeClose) {

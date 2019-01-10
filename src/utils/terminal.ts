@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
-import { isNormalCompleteLog, isLastStr } from './utils';
+import {
+  Code,
+  isLastStr,
+  isNormalCompleteLog,
+} from './utils';
 
 type Status = 'busy' | 'idle';
 type WaitItem = {
-  cmd: string;
-  wait_str: string;
+  code: Code;
   fun: () => void;
 };
 type Item = {
@@ -94,25 +97,23 @@ export function getActiveTerminals() {
 }
 
 export function runCmd(
-  cmd: string,
   terminal: vscode.Terminal,
-  wait_time: number,
-  wait_str: string,
+  code: Code,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     for (const item of terminal_list) {
-      const { terminal: terminal_item, status } = item;
+      const { terminal: terminal_item } = item;
+      const { text } = code;
       if (terminal !== terminal_item) {
         continue;
       }
-      terminal.sendText(cmd);
+      terminal.sendText(text);
       if (terminal !== terminal_item) {
         continue;
       }
       item.wait_info = {
+        code,
         fun: resolve,
-        wait_str,
-        cmd,
       };
     }
   });
@@ -131,10 +132,13 @@ function watchTerminal(item: Item) {
       return;
     }
 
-    const { fun, wait_str, cmd } = wait_info;
-    /** 只有当前运行的cmd, 出现在terminal的log中, 才开始监听 */
+    const { fun, code } = wait_info;
+    const { text, wait_str, no_output } = code;
+    /** 只有当前运行的　cmd, 出现在terminal的log中, 才开始监听
+     * password 不会 output 就不会有这些信息
+     */
     if (item.status === 'idle') {
-      if (!logHasStr(log, cmd)) {
+      if (!no_output && !logHasStr(log, text)) {
         return;
       }
       item.status = 'busy';

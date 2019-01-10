@@ -1,22 +1,26 @@
--   @todo 测试多条数据 git acpp
+-   @ques password 后面如何判断开始
+    -   没有 output
+    -   password 的下一条不会显示记录
 
--   @ques 如果真是我想的那样怎么处理....
+*   @todo 测试多条数据 git acpp
+
+*   @ques 如果真是我想的那样怎么处理....
 
     -   开始第一条命令开始的时候才是开始
     -   ## 我怎么知道第一条命令开始???
 
--   好像如果是没有结束 光标都会在另一行
+*   好像如果是没有结束 光标都会在另一行
 
-*   @ques 如果没有指明 cmd 的 cwd 能不能直接使用 workspace folder 作为
+-   @ques 如果没有指明 cmd 的 cwd 能不能直接使用 workspace folder 作为
 
--   @ques 要不要提示同名的 item
+*   @ques 要不要提示同名的 item
 
-*   `www@21.58.201.92's password:` 检测密码输入
-*   @ques bash ssh 怎么样
+-   `www@21.58.201.92's password:` 检测密码输入
+-   @ques bash ssh 怎么样
 
     -   endStr 结束字符串
 
--   @bug terminal list 中列表 后打开的在后面
+*   @bug terminal list 中列表 后打开的在后面
 
 ## 2019-01-10 10:12:17
 

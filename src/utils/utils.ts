@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { window, workspace } from 'vscode';
 import {
-  terminal_end_str,
-  extension_name,
   code_item_reg_exp,
+  extension_name,
   terminal_end_char,
+  terminal_end_reg,
 } from '../const';
 
 export function exists(path_str: string) {
@@ -77,32 +77,25 @@ export function isNormalCompleteLog(str: string) {
   if (!str || str.length === 0) {
     return;
   }
-  for (const end_str of terminal_end_str) {
-    for (const end_char of terminal_end_char) {
-      const test_str = end_char + end_str;
-      const index = str.lastIndexOf(test_str);
-      if (index === -1) {
-        continue;
-      }
-      if (index + test_str.length === str.length) {
-        return true;
-      }
+  for (const end_char of terminal_end_char) {
+    const test_str = new RegExp(
+      end_char + terminal_end_reg,
+    );
+    const test_able = test_str.test(str);
+    if (test_able) {
+      return true;
     }
   }
+  return true;
 }
 export function isLastStr(str: string, end: string) {
   if (!str || str.length === 0) {
     return false;
   }
-  for (const end_str of terminal_end_str) {
-    const test_str = end + end_str;
-    const index = str.lastIndexOf(test_str);
-    if (index === -1) {
-      continue;
-    }
-    if (index + test_str.length === str.length) {
-      return true;
-    }
+  const test_str = new RegExp(end + terminal_end_reg);
+  const test_able = test_str.test(str);
+  if (test_able) {
+    return true;
   }
   return false;
 }
@@ -111,6 +104,7 @@ export type Code = {
   text: string;
   wait_time: number;
   wait_str: string;
+  no_output: boolean;
 };
 /** 分析 code str数据 */
 export function analysisCodeStr(
@@ -126,13 +120,15 @@ export function analysisCodeStr(
     if (!match_item) {
       continue;
     }
-    const text = match_item[1];
+    const text = match_item[1].trim();
     const wait_time = Number(match_item[3]) || 0.5;
     const wait_str = match_item[5] || '';
+    const no_output = match_item[6] ? true : false;
     result.push({
       text,
       wait_time,
       wait_str,
+      no_output,
     });
   }
   return result;

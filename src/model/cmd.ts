@@ -1,9 +1,9 @@
 import { TerminalOptions } from 'vscode';
-import { code_item_reg_exp } from '../const';
+import { code_reg_exp, code_item_reg_exp } from '../const';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
 import { runTask } from '../utils/task';
 import { createTerminal, disposeTerminal, runCmd } from '../utils/terminal';
-import { generateId } from '../utils/utils';
+import { generateId, analysisCodeStr, Code } from '../utils/utils';
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
 import { Behave, Model } from './dop';
 
@@ -18,12 +18,9 @@ export type ExternOpt = {
 
 export type CmdOPt = TerminalOptions & ExternOpt;
 
-export type Code = {
-  text: string;
-  wait: number;
-};
-
 export type CmdInfo = { id: string; name: string };
+
+export type Code = Code;
 
 export class Cmd extends Model {
   public id: string;
@@ -43,7 +40,6 @@ export class Cmd extends Model {
 export class DefaultCmd extends Behave<Cmd> {
   public generate(info: CmdSymbols) {
     const { name, opt_str, code_str } = info;
-    const codes: Code[] = [];
 
     const id = generateId();
 
@@ -56,23 +52,9 @@ export class DefaultCmd extends Behave<Cmd> {
     }
     const { hide, before, completeClose, is_task } = opt;
 
+    let codes: Code[] = [];
     if (code_str) {
-      const code_str_arr = code_str.split(/\r?\n/g);
-      for (const item of code_str_arr) {
-        if (item === '') {
-          continue;
-        }
-        const match_item = item.match(code_item_reg_exp);
-        if (!match_item) {
-          continue;
-        }
-        const text = match_item[1];
-        const wait = Number(match_item[3]) || 0.5;
-        codes.push({
-          text,
-          wait,
-        });
-      }
+      codes = analysisCodeStr(code_str);
     }
 
     opt = {
@@ -122,8 +104,8 @@ export class DefaultCmd extends Behave<Cmd> {
     const terminal = createTerminal(opt);
     terminal.show();
     for (const code of codes) {
-      const { text, wait } = code;
-      await runCmd(text, terminal, wait);
+      const { text, wait_time, wait_str } = code;
+      await runCmd(text, terminal, wait_time, wait_str);
     }
 
     if (completeClose) {

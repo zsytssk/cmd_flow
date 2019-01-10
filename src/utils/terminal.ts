@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
-import { terminal_end_str } from '../const';
+import { isNormalCompleteLog, isLastStr } from './utils';
 
 type Status = 'busy' | 'idle';
-type WaitFun = () => void;
+type WaitItem = {
+  wait_str: string;
+  fun: () => void;
+};
 type Item = {
   terminal: vscode.Terminal;
   status: Status;
-  wait_list: WaitFun[];
+  wait_info: WaitItem;
 };
 const terminal_list: Item[] = [];
 
@@ -15,10 +18,10 @@ export function createTerminal(opt: vscode.TerminalOptions) {
   let terminal = getIdleTerminalByName(name);
   if (!terminal) {
     terminal = vscode.window.createTerminal(opt);
-    terminal_list.push({
+    terminal_list.unshift({
       terminal,
       status: 'idle',
-      wait_list: [],
+      wait_info: undefined,
     });
     watchTerminal(terminal);
   }
@@ -60,10 +63,35 @@ export function getIdleTerminalByName(terminal_name: string) {
   }
 }
 
+export type TerminalItem = {
+  terminal: vscode.Terminal;
+  name: string;
+  group: string;
+};
+export function getActiveTerminals() {
+  const len = terminal_list.length;
+  const terminals = vscode.window.terminals;
+  const result: TerminalItem[] = [];
+  for (let i = len - 1; i >= 0; i--) {
+    const { terminal } = terminal_list[i];
+    if (!terminals || terminals.indexOf(terminal) === -1) {
+      disposeTerminal(terminal);
+      continue;
+    }
+    result.unshift({
+      terminal,
+      name: terminal.name,
+      group: 'active terminal',
+    });
+  }
+  return result;
+}
+
 export function runCmd(
   cmd: string,
   terminal: vscode.Terminal,
-  wait: number,
+  wait_time: number,
+  wait_str: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     for (const item of terminal_list) {
@@ -74,7 +102,7 @@ export function runCmd(
       item.status = 'busy';
     }
     terminal.sendText(cmd);
-    waitTerminalFinish(terminal, wait).then(() => {
+    waitTerminalFinish(terminal, wait_time, wait_str).then(() => {
       resolve();
     });
   });
@@ -82,18 +110,22 @@ export function runCmd(
 
 function waitTerminalFinish(
   terminal: vscode.Terminal,
-  wait: number,
+  wait_time: number,
+  wait_str: string,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     for (const item of terminal_list) {
-      const { terminal: terminal_item, status, wait_list } = item;
+      const { terminal: terminal_item, status } = item;
       if (terminal !== terminal_item) {
         continue;
       }
       if (status === 'idle') {
-        resolve();
+        return resolve();
       }
-      wait_list.push(resolve);
+      item.wait_info = {
+        fun: resolve,
+        wait_str,
+      };
     }
   });
 }
@@ -108,38 +140,22 @@ function watchTerminal(terminal: vscode.Terminal) {
       if (terminal !== terminal_item) {
         continue;
       }
-      log += data;
+      log = data;
       clearTimeout(timeout_check_idle);
-      terminal.processId.then(id => {
-        console.log(id);
-      });
       timeout_check_idle = setTimeout(() => {
-        if (!isLastStr(log)) {
-          log = '';
+        const { fun, wait_str } = item.wait_info;
+        if (
+          (!wait_str && isNormalCompleteLog(log)) ||
+          (wait_str && isLastStr(log, wait_str))
+        ) {
+          item.status = 'idle';
+          item.wait_info = undefined;
+          fun();
           return;
         }
-        item.status = 'idle';
-        const { wait_list } = item;
-        for (const fun of wait_list) {
-          fun();
-        }
-        item.wait_list = [];
+
+        log = '';
       }, 0.1);
     }
   });
-}
-
-function isLastStr(str: string) {
-  if (!str || str.length === 0) {
-    return;
-  }
-  for (const end of terminal_end_str) {
-    const index = str.lastIndexOf(end);
-    if (index === -1) {
-      continue;
-    }
-    if (index + end.length === str.length) {
-      return true;
-    }
-  }
 }

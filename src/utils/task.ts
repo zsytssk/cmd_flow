@@ -20,6 +20,7 @@ export function runTask(cmd: string, opt: TerminalOptions): Promise<void> {
     tasks.onDidEndTask(event => {
       if (event.execution === result) {
         resolve();
+        result.terminate();
       }
     });
   });

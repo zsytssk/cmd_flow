@@ -86,7 +86,7 @@ export function isNormalCompleteLog(str: string) {
       return true;
     }
   }
-  return true;
+  return false;
 }
 export function isLastStr(str: string, end: string) {
   if (!str || str.length === 0) {
@@ -132,6 +132,9 @@ export function analysisCodeStr(
     });
   }
   return result;
+}
+export function clearLogEnd(log: string) {
+  return log.replace(new RegExp(terminal_end_reg), '');
 }
 export function sleep(time) {
   return new Promise(resolve => {

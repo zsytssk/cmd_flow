@@ -3,6 +3,7 @@ import {
   Code,
   isLastStr,
   isNormalCompleteLog,
+  clearLogEnd,
 } from './utils';
 
 type Status = 'busy' | 'idle';
@@ -139,6 +140,10 @@ function watchTerminal(item: Item) {
      */
     if (item.status === 'idle') {
       if (!no_output && !logHasStr(log, text)) {
+        /** 如果sendText不在一次onDidWriteData中出现, log很容易在结尾加上乱七八糟的字符
+         * 需要将它清理掉
+         */
+        log = clearLogEnd(data);
         return;
       }
       item.status = 'busy';

@@ -1,5 +1,4 @@
 import { TerminalOptions } from 'vscode';
-import { code_reg_exp, code_item_reg_exp } from '../const';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
 import { runTask } from '../utils/task';
 import {
@@ -8,9 +7,9 @@ import {
   runCmd,
 } from '../utils/terminal';
 import {
-  generateId,
   analysisCodeStr,
   Code,
+  generateId,
   sleep,
 } from '../utils/utils';
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
@@ -119,8 +118,7 @@ export class DefaultCmd extends Behave<Cmd> {
     }
 
     opt.name = `${top.name} - ${opt.name}`;
-    const terminal = createTerminal(opt);
-    terminal.show();
+    const terminal = await createTerminal(opt);
     for (const code of codes) {
       await runCmd(terminal, code);
     }

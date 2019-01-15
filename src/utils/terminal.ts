@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import {
+  clearLogEnd,
   Code,
   isLastStr,
   isNormalCompleteLog,
-  clearLogEnd,
 } from './utils';
 
-type Status = 'busy' | 'idle';
+type Status = 'no_show' | 'busy' | 'idle';
 type WaitItem = {
   code: Code;
   fun: () => void;
@@ -18,7 +18,7 @@ type Item = {
 };
 const terminal_list: Item[] = [];
 
-export function createTerminal(
+export async function createTerminal(
   opt: vscode.TerminalOptions,
 ) {
   const { name } = opt;
@@ -27,11 +27,12 @@ export function createTerminal(
     terminal = vscode.window.createTerminal(opt);
     const item: Item = {
       terminal,
-      status: 'idle',
+      status: 'no_show',
       wait_info: undefined,
     };
     terminal_list.unshift(item);
     watchTerminal(item);
+    await showTerminal(terminal);
   }
   return terminal;
 }
@@ -46,6 +47,25 @@ export function disposeTerminal(terminal: vscode.Terminal) {
     terminal.dispose();
     terminal_list.splice(i, 1);
   }
+}
+
+export function showTerminal(terminal: vscode.Terminal) {
+  return new Promise((resolve, reject) => {
+    terminal.show();
+    for (const item of terminal_list) {
+      const { terminal: terminal_item, status } = item;
+      if (terminal !== terminal_item) {
+        continue;
+      }
+      if (status !== 'no_show') {
+        return resolve();
+      }
+      item.wait_info = {
+        code: {},
+        fun: resolve,
+      };
+    }
+  });
 }
 
 export function getIdleTerminalByName(
@@ -109,9 +129,7 @@ export function runCmd(
         continue;
       }
       terminal.sendText(text);
-      if (terminal !== terminal_item) {
-        continue;
-      }
+      item.status = 'busy';
       item.wait_info = {
         code,
         fun: resolve,
@@ -127,35 +145,22 @@ function watchTerminal(item: Item) {
   const { terminal } = item;
   (terminal as any).onDidWriteData(data => {
     const { wait_info } = item;
-    log += data;
+    log += clearLogEnd(data);
 
     if (!wait_info) {
       return;
     }
 
     const { fun, code } = wait_info;
-    const { text, wait_str, no_output } = code;
-    /** 只有当前运行的　cmd, 出现在terminal的log中, 才开始监听
-     * password 不会 output 就不会有这些信息
-     */
-    if (item.status === 'idle') {
-      if (!no_output && !logHasStr(log, text)) {
-        /** 如果sendText不在一次onDidWriteData中出现, log很容易在结尾加上乱七八糟的字符
-         * 需要将它清理掉
-         */
-        log = clearLogEnd(data);
-        return;
-      }
-      item.status = 'busy';
-    }
+    const { wait_str } = code;
 
     clearTimeout(timeout_check_idle);
     timeout_check_idle = setTimeout(() => {
       if (item.status === 'idle' || !isEnd(log, wait_str)) {
-        log = '';
         return;
       }
 
+      log = '';
       item.status = 'idle';
       item.wait_info = undefined;
       fun();

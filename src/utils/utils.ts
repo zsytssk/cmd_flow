@@ -78,9 +78,7 @@ export function isNormalCompleteLog(str: string) {
     return;
   }
   for (const end_char of terminal_end_char) {
-    const test_str = new RegExp(
-      end_char + terminal_end_reg,
-    );
+    const test_str = new RegExp(end_char + '$');
     const test_able = test_str.test(str);
     if (test_able) {
       return true;
@@ -92,7 +90,7 @@ export function isLastStr(str: string, end: string) {
   if (!str || str.length === 0) {
     return false;
   }
-  const test_str = new RegExp(end + terminal_end_reg);
+  const test_str = new RegExp(end + '$');
   const test_able = test_str.test(str);
   if (test_able) {
     return true;
@@ -101,10 +99,10 @@ export function isLastStr(str: string, end: string) {
 }
 
 export type Code = {
-  text: string;
-  wait_time: number;
-  wait_str: string;
-  no_output: boolean;
+  text?: string;
+  wait_time?: number;
+  wait_str?: string;
+  no_output?: boolean;
 };
 /** 分析 code str数据 */
 export function analysisCodeStr(

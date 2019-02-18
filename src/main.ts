@@ -1,22 +1,34 @@
 import { QuickPickItem, window, workspace } from 'vscode';
 import { extension_name } from './const';
 import { GroupCmdInfo } from './model/cmdGroup';
-import { CmdManager, DefaultCmdManager } from './model/cmdManager';
-import { addToRecent, recentCmdPop, RecentItem } from './recent';
-import { getActiveTerminals, TerminalItem } from './utils/terminal';
+import {
+  CmdManager,
+  DefaultCmdManager,
+} from './model/cmdManager';
+import {
+  addToRecent,
+  recentCmdPop,
+  RecentItem,
+} from './recent';
+import {
+  getActiveTerminals,
+  TerminalItem,
+} from './utils/terminal';
 
 const cmd_manager = new CmdManager();
 export async function listCmd() {
-  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
+  const behave = cmd_manager.getBehaveByCtor(
+    DefaultCmdManager,
+  );
   let all_list: RecentItem[] = [];
-  let cmd_list = await behave.getAllCmd();
+  const cmd_list = await behave.getAllCmd();
   if (!cmd_list.length) {
     window.showInformationMessage(
       `${extension_name}:>Cant find cmd_flow in cur file and global file !`,
     );
     return;
   }
-  cmd_list = recentCmdPop(cmd_list);
+  // cmd_list = recentCmdPop(cmd_list);
   let active_terminals = getActiveTerminals();
   active_terminals = recentCmdPop(active_terminals);
   all_list = all_list.concat(active_terminals, cmd_list);
@@ -35,7 +47,10 @@ export async function listCmd() {
   });
 
   const cur_item = all_list.find(cmd_item => {
-    return cmd_item.group === item.description && cmd_item.name === item.label;
+    return (
+      cmd_item.group === item.description &&
+      cmd_item.name === item.label
+    );
   });
   addToRecent(cur_item);
   if ((cur_item as TerminalItem).terminal) {
@@ -47,7 +62,9 @@ export async function listCmd() {
 }
 
 export async function listFile() {
-  const behave = cmd_manager.getBehaveByCtor(DefaultCmdManager);
+  const behave = cmd_manager.getBehaveByCtor(
+    DefaultCmdManager,
+  );
   const files = await behave.getFiles();
 
   const input_list = [];

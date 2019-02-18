@@ -1,6 +1,6 @@
 ## cmdFlow
 
-use markdown organize cmd,
+按顺序一条一条发送命令给 terminal,在 markdown 组织常用的 cmd 命令
 
 ## setting
 
@@ -28,4 +28,5 @@ wait(time: 单位秒)来表示命令需要等待的时间,你如果命令很长�
 [demo](./doc/cmd.md)
 
 ![demo1](./images/demo1.png)
+
 ![demo2](./images/demo2.png)

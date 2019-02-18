@@ -117,7 +117,7 @@ export class DefaultCmd extends Behave<Cmd> {
       return;
     }
 
-    opt.name = `${top.name} - ${opt.name}`;
+    opt.name = `${opt.name} - ${top.name}`;
     const terminal = await createTerminal(opt);
     for (const code of codes) {
       await runCmd(terminal, code);

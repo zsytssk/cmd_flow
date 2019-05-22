@@ -154,6 +154,8 @@ function watchTerminal(item: Item) {
     const { fun, code } = wait_info;
     const { wait_str } = code;
 
+    console.log(`test:>`, clearLogEnd(data), wait_str);
+
     clearTimeout(timeout_check_idle);
     timeout_check_idle = setTimeout(() => {
       if (item.status === 'idle' || !isEnd(log, wait_str)) {
@@ -176,18 +178,4 @@ function isEnd(log: string, wait_str: string) {
     return true;
   }
   return false;
-}
-
-/** 检测log中是否包含test_str被空格分离的所有item
- * 因为:> 命令行中输出字符会在中间加上一大堆乱七八糟的东西
- * 我也不知道是什么鬼, 也许是高亮的提示...
- */
-function logHasStr(log: string, test_str: string) {
-  const str_arr = test_str.split(' ');
-  for (const item of str_arr) {
-    if (log.indexOf(item) === -1) {
-      return false;
-    }
-  }
-  return true;
 }

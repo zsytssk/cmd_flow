@@ -7,6 +7,17 @@
         -   用 node 脚本
     -   像 task 一样直接编辑怎么处理
 
+-   https://github.com/microsoft/vscode-extension-samples/tree/12a3528bae5fd7f97c9966fba2daede8b8adde31/tree-view-sample
+
+*   [cmdFlow]
+
+    -   有些结尾没有空格的如何处理
+    -   打开检测是不是 busy 如果是 就重新打开 不然就...
+    -   hide 的命令直接关闭 terminal...
+    -   activeTerminal 关闭...
+    -   在侧边栏显示...
+    -   cmdFlow 无法知道一个任务是成功还是失败...
+
 ## 2019-01-02 18:40:38
 
 -   @ques 能不能监听 onData 中数据的变化来判断任务是否终止??

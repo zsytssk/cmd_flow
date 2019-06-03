@@ -58,3 +58,5 @@ export async function listFile() {
   const doc = await workspace.openTextDocument(file);
   await window.showTextDocument(doc);
 }
+
+window.registerTreeDataProvider('nodeDependencies', new DepNodeProvider());

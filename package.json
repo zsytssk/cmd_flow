@@ -59,6 +59,24 @@
           "description": "cmdFlow workspace folder cmd file position"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cmdFlow",
+          "title": "cmdFlow",
+          "icon": "images/activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "cmdFlow": [
+        {
+          "id": "cmdFlowList",
+          "name": "cmd flow list",
+          "when": "explorer"
+        }
+      ]
     }
   },
   "scripts": {

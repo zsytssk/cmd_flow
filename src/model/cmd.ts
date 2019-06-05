@@ -1,8 +1,17 @@
-import { TerminalOptions, window } from 'vscode';
-import { code_item_reg_exp } from '../const';
+import { TerminalOptions } from 'vscode';
 import { CmdSymbols } from '../utils/getCmdListFromDoc';
-import { createTerminal, disposeTerminal, runCmd } from '../utils/terminal';
-import { generateId } from '../utils/utils';
+import { runTask } from '../utils/task';
+import {
+  createTerminal,
+  disposeTerminal,
+  runCmd,
+} from '../utils/terminal';
+import {
+  analysisCodeStr,
+  Code,
+  generateId,
+  sleep,
+} from '../utils/utils';
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
 import { Behave, Model } from './dop';
 
@@ -12,23 +21,23 @@ export type ExternOpt = {
   hide?: boolean;
   /** 是否先执行其他命令 */
   before?: string[];
+  is_task?: boolean;
 };
 
 export type CmdOPt = TerminalOptions & ExternOpt;
 
-export type Code = {
-  text: string;
-  wait: number;
-};
-
 export type CmdInfo = { id: string; name: string };
+
+export type Code = Code;
 
 export class Cmd extends Model {
   public id: string;
   public name: string;
+  public is_task: boolean;
   public opt: TerminalOptions;
   public hide: boolean;
-  public completeClose: boolean;
+  public no_output: boolean;
+  public completeClose: boolean | number;
   public before?: string[];
   public codes?: Code[];
   constructor(top?: Model) {
@@ -40,7 +49,6 @@ export class Cmd extends Model {
 export class DefaultCmd extends Behave<Cmd> {
   public generate(info: CmdSymbols) {
     const { name, opt_str, code_str } = info;
-    const codes: Code[] = [];
 
     const id = generateId();
 
@@ -51,32 +59,27 @@ export class DefaultCmd extends Behave<Cmd> {
       // tslint:disable-next-line: no-console
       console.log(err);
     }
-    const { hide, before, completeClose } = opt;
+    const { hide, before, completeClose, is_task } = opt;
 
+    let codes: Code[] = [];
     if (code_str) {
-      const code_str_arr = code_str.split(/\r?\n/g);
-      for (const item of code_str_arr) {
-        if (item === '') {
-          continue;
-        }
-        const match_item = item.match(code_item_reg_exp);
-        if (!match_item) {
-          continue;
-        }
-        const text = match_item[1];
-        const wait = Number(match_item[3]) || 0.5;
-        codes.push({
-          text,
-          wait,
-        });
-      }
+      codes = analysisCodeStr(code_str);
     }
 
     opt = {
       name,
       ...opt,
     };
-    this.setData({ id, name, codes, opt, hide, before, completeClose });
+    this.setData({
+      id,
+      name,
+      is_task,
+      codes,
+      opt,
+      hide,
+      before,
+      completeClose,
+    });
   }
   public getInfo(): CmdInfo {
     const { id, name, hide } = this.model;
@@ -89,25 +92,43 @@ export class DefaultCmd extends Behave<Cmd> {
     };
   }
   public async execute() {
-    const { codes, opt, completeClose, before } = this.model;
-    const terminal = createTerminal(opt);
-    terminal.show();
+    const {
+      codes,
+      opt,
+      completeClose,
+      before,
+      is_task,
+    } = this.model;
+    const top: CmdGroup = this.model.closest();
 
     if (before) {
-      const top: CmdGroup = this.model.closest();
-      const top_behave = top.getBehaveByCtor(DefaultCmdGroup);
+      const top_behave = top.getBehaveByCtor(
+        DefaultCmdGroup,
+      );
       for (const item_name of before) {
         await top_behave.executeByName(item_name);
       }
     }
+    if (is_task) {
+      for (const code of codes) {
+        const { text } = code;
+        await runTask(text, opt);
+      }
+      return;
+    }
 
+    opt.name = `${opt.name} - ${top.name}`;
+    const terminal = await createTerminal(opt);
     for (const code of codes) {
-      const { text, wait } = code;
-      await runCmd(terminal, text, wait);
+      await runCmd(terminal, code);
     }
 
-    if (completeClose) {
-      disposeTerminal(terminal);
+    if (!completeClose) {
+      return;
     }
+    if (typeof completeClose === 'number') {
+      await sleep(completeClose);
+    }
+    disposeTerminal(terminal);
   }
 }

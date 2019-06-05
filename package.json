@@ -2,7 +2,7 @@
   "name": "vscode-cmd-flow",
   "displayName": "cmd-flow",
   "description": "vscode extension run terminal cmd one by one",
-  "version": "0.3.1",
+  "version": "0.6.5",
   "publisher": "zsytssk",
   "author": {
     "name": "zsytssk",

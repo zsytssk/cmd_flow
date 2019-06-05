@@ -1,7 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
-import { workspace, window } from 'vscode';
+import { window, workspace } from 'vscode';
+import {
+  code_item_reg_exp,
+  extension_name,
+  terminal_end_char,
+  terminal_end_reg,
+  terminal_end_reg_empty,
+} from '../const';
 
 export function exists(path_str: string) {
   return new Promise((resolve, reject) => {
@@ -54,7 +60,8 @@ export async function getAllCmdFile() {
 
   if (!files.length) {
     window.showInformationMessage(
-      'cant find any file for cmdFlow; make sure cmdFlow.globalFile or cmdFlow.workspaceFile are correct!',
+      `${extension_name}:>cant find any file for cmdFlow; make sure
+      cmdFlow.globalFile or cmdFlow.workspaceFile are correct!`,
     );
   }
 
@@ -65,4 +72,75 @@ export function generateId() {
   return Math.random()
     .toString()
     .replace('0.', '');
+}
+
+export function isNormalCompleteLog(str: string) {
+  if (!str || str.length === 0) {
+    return;
+  }
+  for (const end_char of terminal_end_char) {
+    const test_str = new RegExp(end_char + '$');
+    const test_able = test_str.test(str);
+    if (test_able) {
+      return true;
+    }
+  }
+  return false;
+}
+export function isLastStr(str: string, end: string) {
+  if (!str || str.length === 0) {
+    return false;
+  }
+  const test_str = new RegExp(end + '$');
+  const test_able = test_str.test(str);
+  if (test_able) {
+    return true;
+  }
+  return false;
+}
+
+export type Code = {
+  text?: string;
+  wait_time?: number;
+  wait_str?: string;
+  no_output?: boolean;
+};
+/** 分析 code str数据 */
+export function analysisCodeStr(
+  source_str: string,
+): Code[] {
+  const code_str_arr = source_str.split(/\r?\n/g);
+  const result = [] as Code[];
+  for (const item of code_str_arr) {
+    if (item === '') {
+      continue;
+    }
+    const match_item = item.match(code_item_reg_exp);
+    if (!match_item) {
+      continue;
+    }
+    const text = match_item[1].trim();
+    const wait_time = Number(match_item[3]) || 0.5;
+    const wait_str = match_item[5] || '';
+    const no_output = match_item[6] ? true : false;
+    result.push({
+      text,
+      wait_time,
+      wait_str,
+      no_output,
+    });
+  }
+  return result;
+}
+export function clearLogEnd(log: string) {
+  return log
+    .replace(new RegExp(terminal_end_reg), '')
+    .replace(new RegExp(terminal_end_reg_empty), '');
+}
+export function sleep(time) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, time * 1000);
+  });
 }

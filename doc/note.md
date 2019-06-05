@@ -14,13 +14,77 @@
 ## 2019-06-04 07:55:48
 
 -   @note cmd_flow
+-   @ques cmd 命令怎么不起作用了
 
-    -   用 task api, 去做某些任务
-        -   task api 能进入 xshell 吗
-    -   或者用 node 脚本执行命令
-    -   自定义一些命令 open file folder ...
-        -   用 node 脚本
-    -   像 task 一样直接编辑怎么处理
+    -   怎么有时候可以有时不行呢
+
+-   @ques 现在无法同时打开多个 同样的 怎么处理
+    -   用 name group 匹配 好像不行
+    -   是不是 busy
+
+## 2019-01-11 00:28:49
+
+-   @ques password 后面如何判断开始
+    -   没有 output
+    -   password 的下一条不会显示记录
+
+*   @todo 测试多条数据 git acpp
+
+*   @ques 如果真是我想的那样怎么处理....
+
+    -   开始第一条命令开始的时候才是开始
+    -   ## 我怎么知道第一条命令开始???
+
+*   好像如果是没有结束 光标都会在另一行
+
+-   @ques 如果没有指明 cmd 的 cwd 能不能直接使用 workspace folder 作为
+
+*   @ques 要不要提示同名的 item
+
+-   `www@21.58.201.92's password:` 检测密码输入
+-   @ques bash ssh 怎么样
+
+    -   endStr 结束字符串
+
+*   @bug terminal list 中列表 后打开的在后面
+
+## 2019-01-10 10:12:17
+
+-   cmd_flow 最近命令(id, 更新的就有问题了), 直接显示运行的 terminal
+
+    -   update 时只更新 codes + opt, 其他的不更新
+    -   新添加 删除的怎么处理
+    -   还是用名称吧 group+name
+    -   ***
+    -   group 名称太长了
+    -   task 如何自动关闭 | reuse
+
+*   @bug complete meiyouclose
+
+    -   `code -r'
+
+-   git pla push 失败 我怎么知道
+
+    -   比方说我后面有一个任务, 如果这个失败, 后面就不进行
+
+## 2019-01-08 17:08:06
+
+-   @ques process 有没有 loadError 的方法
+
+-   fetchTasks 是什么意思
+
+-   @ques terminal 最好带上 group
+
+*   '[0K[32G', '[0K[3G[?25h', '[0K[?25h'
+    这些东西是不是乱码了
+
+    -   win10 linux osx 的 terminal end string
+
+*   @ques 不知道外面 dispose terminal
+
+## 2019-01-04 17:05:42
+
+-   @todo 更新 vscode 版本 vscode
 
 ## 2019-01-02 18:40:38
 
@@ -167,10 +231,9 @@ https://github.com/patrys/vscode-code-outline/blob/master/src/symbolOutline.ts
 -   @ques vscode indent space...
 
 ```ts
-let d = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-    'vscode.executeDocumentSymbolProvider',
-    list,
-);
+let d = await vscode.commands.executeCommand<
+    vscode.SymbolInformation[]
+>('vscode.executeDocumentSymbolProvider', list);
 ```
 
 -   @ques 必须要打开我才能 获得 吗 SymbolProvider

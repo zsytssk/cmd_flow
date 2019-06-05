@@ -5,7 +5,7 @@
   "no-prose-wrap": true,
   "trailingComma": "all",
   "comma-dangle": [2, "always-multiline"],
-  "printWidth": 80,
+  "printWidth": 60,
   "overrides": [
     {
       "files": "*.md",

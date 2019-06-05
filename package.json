@@ -64,7 +64,7 @@
       "activitybar": [
         {
           "id": "cmdFlow",
-          "title": "cmdFlow",
+          "title": "cmd flow",
           "icon": "images/activitybar.svg"
         }
       ]

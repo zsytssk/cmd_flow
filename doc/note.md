@@ -1,6 +1,12 @@
+-   [activityBar] 如何在侧边栏显示...
+
+## 2019-06-06 07:32:45
+
 -   @todo
 -   https://github.com/microsoft/vscode-extension-samples/tree/12a3528bae5fd7f97c9966fba2daede8b8adde31/tree-view-sample
     https://code.visualstudio.com/api/references/vscode-api#TreeDataProvider
+
+-
 
 *   [cmdFlow]
 
@@ -10,6 +16,8 @@
     -   activeTerminal 关闭...
     -   在侧边栏显示...
     -   cmdFlow 无法知道一个任务是成功还是失败...
+
+*   node modules remove stdout color str
 
 ## 2019-06-04 07:55:48
 

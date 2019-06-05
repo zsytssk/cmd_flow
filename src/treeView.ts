@@ -2,14 +2,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
+export class DepNodeProvider
+  implements vscode.TreeDataProvider<Dependency> {
   private _onDidChangeTreeData: vscode.EventEmitter<
     Dependency | undefined
   > = new vscode.EventEmitter<Dependency | undefined>();
-  readonly onDidChangeTreeData: vscode.Event<Dependency | undefined> = this
-    ._onDidChangeTreeData.event;
+  readonly onDidChangeTreeData: vscode.Event<
+    Dependency | undefined
+  > = this._onDidChangeTreeData.event;
 
-  constructor(private workspaceRoot: string) {}
+  constructor(private workspaceRoot: string) {
+    console.log(this);
+  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -19,9 +23,13 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
     return element;
   }
 
-  getChildren(element?: Dependency): Thenable<Dependency[]> {
+  getChildren(
+    element?: Dependency,
+  ): Thenable<Dependency[]> {
     if (!this.workspaceRoot) {
-      vscode.window.showInformationMessage('No dependency in empty workspace');
+      vscode.window.showInformationMessage(
+        'No dependency in empty workspace',
+      );
       return Promise.resolve([]);
     }
 
@@ -37,11 +45,18 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
         ),
       );
     } else {
-      const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
+      const packageJsonPath = path.join(
+        this.workspaceRoot,
+        'package.json',
+      );
       if (this.pathExists(packageJsonPath)) {
-        return Promise.resolve(this.getDepsInPackageJson(packageJsonPath));
+        return Promise.resolve(
+          this.getDepsInPackageJson(packageJsonPath),
+        );
       } else {
-        vscode.window.showInformationMessage('Workspace has no package.json');
+        vscode.window.showInformationMessage(
+          'Workspace has no package.json',
+        );
         return Promise.resolve([]);
       }
     }
@@ -50,14 +65,25 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
   /**
    * Given the path to package.json, read all its dependencies and devDependencies.
    */
-  private getDepsInPackageJson(packageJsonPath: string): Dependency[] {
+  private getDepsInPackageJson(
+    packageJsonPath: string,
+  ): Dependency[] {
     if (this.pathExists(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+      const packageJson = JSON.parse(
+        fs.readFileSync(packageJsonPath, 'utf-8'),
+      );
 
-      const toDep = (moduleName: string, version: string): Dependency => {
+      const toDep = (
+        moduleName: string,
+        version: string,
+      ): Dependency => {
         if (
           this.pathExists(
-            path.join(this.workspaceRoot, 'node_modules', moduleName),
+            path.join(
+              this.workspaceRoot,
+              'node_modules',
+              moduleName,
+            ),
           )
         ) {
           return new Dependency(
@@ -85,8 +111,9 @@ export class DepNodeProvider implements vscode.TreeDataProvider<Dependency> {
           )
         : [];
       const devDeps = packageJson.devDependencies
-        ? Object.keys(packageJson.devDependencies).map(dep =>
-            toDep(dep, packageJson.devDependencies[dep]),
+        ? Object.keys(packageJson.devDependencies).map(
+            dep =>
+              toDep(dep, packageJson.devDependencies[dep]),
           )
         : [];
       return deps.concat(devDeps);

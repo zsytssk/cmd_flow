@@ -28,7 +28,6 @@ export async function listCmd() {
     );
     return;
   }
-  // cmd_list = recentCmdPop(cmd_list);
   let active_terminals = getActiveTerminals();
   active_terminals = recentCmdPop(active_terminals);
   all_list = all_list.concat(active_terminals, cmd_list);

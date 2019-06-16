@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import stripAnsi from 'strip-ansi';
 import { window, workspace } from 'vscode';
 import {
   code_item_reg_exp,
   extension_name,
   terminal_end_char,
-  terminal_end_reg,
-  terminal_end_reg_empty,
 } from '../const';
 
 export function exists(path_str: string) {
@@ -133,9 +132,9 @@ export function analysisCodeStr(
   return result;
 }
 export function clearLogEnd(log: string) {
-  return log
-    .replace(new RegExp(terminal_end_reg), '')
-    .replace(new RegExp(terminal_end_reg_empty), '');
+  return stripAnsi(log)
+    .replace(/X/g, '')
+    .replace(/\s*$/, '');
 }
 export function sleep(time) {
   return new Promise(resolve => {

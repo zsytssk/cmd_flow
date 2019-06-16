@@ -2,7 +2,7 @@
   "name": "vscode-cmd-flow",
   "displayName": "cmd-flow",
   "description": "vscode extension run terminal cmd one by one",
-  "version": "0.6.5",
+  "version": "0.7.5",
   "publisher": "zsytssk",
   "author": {
     "name": "zsytssk",
@@ -59,24 +59,6 @@
           "description": "cmdFlow workspace folder cmd file position"
         }
       }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "cmdFlow",
-          "title": "cmd flow",
-          "icon": "images/activitybar.svg"
-        }
-      ]
-    },
-    "views": {
-      "cmdFlow": [
-        {
-          "id": "cmdFlowList",
-          "name": "cmd flow list",
-          "when": "explorer"
-        }
-      ]
     }
   },
   "scripts": {
@@ -94,5 +76,8 @@
     "tslint": "^5.17.0",
     "typescript": "^3.5.1",
     "vscode": "^1.1.34"
+  },
+  "dependencies": {
+    "strip-ansi": "^5.2.0"
   }
 }

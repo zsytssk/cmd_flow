@@ -21,8 +21,9 @@ const terminal_list: Item[] = [];
 export async function createTerminal(
   opt: vscode.TerminalOptions,
 ) {
-  const { name } = opt;
-  let terminal = getIdleTerminalByName(name);
+  // const { name } = opt;
+  // let terminal = getIdleTerminalByName(name);
+  let terminal;
   if (!terminal) {
     terminal = vscode.window.createTerminal(opt);
     const item: Item = {
@@ -154,7 +155,7 @@ function watchTerminal(item: Item) {
     const { fun, code } = wait_info;
     const { wait_str } = code;
 
-    console.log(`test:>`, clearLogEnd(data), wait_str);
+    console.log(`test:>`, log);
 
     clearTimeout(timeout_check_idle);
     timeout_check_idle = setTimeout(() => {

@@ -1,10 +1,13 @@
 export type RecentItem = {
   name: string;
   group: string;
+  sort: number;
 };
 const recent: RecentItem[] = [];
 /** 将最近打开的提前 */
-export function recentCmdPop<T extends RecentItem>(cmd_list: T[]): T[] {
+export function recentCmdPop<T extends RecentItem>(
+  cmd_list: T[],
+): T[] {
   return cmd_list.sort((a, b) => {
     const a_index = recent.findIndex(findIndexFun(a));
     const b_index = recent.findIndex(findIndexFun(b));
@@ -21,6 +24,10 @@ export function addToRecent(cmd: RecentItem) {
 
 function findIndexFun(ori_item: RecentItem) {
   return (item: RecentItem) => {
-    return item.group === ori_item.group && item.name === ori_item.name;
+    return (
+      item.group === ori_item.group &&
+      item.name === ori_item.name &&
+      `${item.sort}: ${item.name}` === ori_item.name
+    );
   };
 }

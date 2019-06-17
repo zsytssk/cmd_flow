@@ -1,5 +1,9 @@
 -   [activityBar] 如何在侧边栏显示...
 
+-   @ques 怎么为 已经打开的 terminal 设置 sort
+    -   直接 vscode..terminals 这里面的顺序...
+    -   sort
+
 ## 2019-06-06 07:32:45
 
 -   @todo

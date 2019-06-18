@@ -1,7 +1,7 @@
 export type RecentItem = {
   name: string;
   group: string;
-  sort: number;
+  sort?: number;
 };
 const recent: RecentItem[] = [];
 /** 将最近打开的提前 */

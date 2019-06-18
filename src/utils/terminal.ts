@@ -98,23 +98,35 @@ export type TerminalItem = {
   terminal: vscode.Terminal;
   name: string;
   group: string;
+  sort: number;
 };
 export function getActiveTerminals() {
-  const len = terminal_list.length;
-  const terminals = vscode.window.terminals;
+  const terminals = vscode.window.terminals || [];
   const result: TerminalItem[] = [];
-  for (let i = len - 1; i >= 0; i--) {
-    const { terminal } = terminal_list[i];
-    if (!terminals || terminals.indexOf(terminal) === -1) {
+
+  /** 清楚terminal_list中已经打开的 */
+  for (const item of terminal_list) {
+    const { terminal } = item;
+    if (terminals.indexOf(terminal) === -1) {
       disposeTerminal(terminal);
       continue;
     }
+  }
+
+  for (
+    let len = terminals.length, i = len - 1;
+    i >= 0;
+    i--
+  ) {
+    const terminal = terminals[i];
     result.unshift({
       terminal,
       name: terminal.name,
       group: 'active terminal',
+      sort: i + 1,
     });
   }
+
   return result;
 }
 

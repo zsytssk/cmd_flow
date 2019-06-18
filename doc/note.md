@@ -1,3 +1,5 @@
+-   @bug 第一次运行无法打开
+
 -   [activityBar] 如何在侧边栏显示...
 
 -   @ques 怎么为 已经打开的 terminal 设置 sort

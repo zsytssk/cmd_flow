@@ -1,5 +1,9 @@
 -   @todo 注释
+
     -   webpack
+
+-   @bug win10 没法监听任务结束
+    -   cmd.exe 结尾会添加 ... ]0;C:\WINDOWS\System32\cmd.exe
 
 ## cmd flow
 

@@ -1,6 +1,6 @@
 ## cmdFlow
 
-![](./images/demo.gif)
+![](./images/test.gif)
 
 在 vscode terminal 中一条接一条运行 cmd.
 (run cmd in vscode terminal one by one, use markdown organize cmd.)

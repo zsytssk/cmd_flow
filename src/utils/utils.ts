@@ -102,7 +102,6 @@ export type Code = {
   text?: string;
   wait_time?: number;
   wait_str?: string;
-  no_output?: boolean;
 };
 /** 分析 code str数据 */
 export function analysisCodeStr(
@@ -121,12 +120,10 @@ export function analysisCodeStr(
     const text = match_item[1].trim();
     const wait_time = Number(match_item[3]) || 0.5;
     const wait_str = match_item[5] || '';
-    const no_output = match_item[6] ? true : false;
     result.push({
       text,
       wait_time,
       wait_str,
-      no_output,
     });
   }
   return result;

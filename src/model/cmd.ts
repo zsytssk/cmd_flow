@@ -15,16 +15,15 @@ import {
 import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
 import { Behave, Model } from './dop';
 
-export type ExternOpt = {
+export type CmdOPt = TerminalOptions & {
   completeClose?: boolean;
-  /** 是否隐藏 */
+  /** 是否隐藏(is hide terminal when run cmd) */
   hide?: boolean;
-  /** 是否先执行其他命令 */
+  /** 是否先执行其他命令 (is run other cmd before) */
   before?: string[];
+  /** 是否通过task来执行  (is run cmd through task just like workbench.action.tasks.runTask) */
   is_task?: boolean;
 };
-
-export type CmdOPt = TerminalOptions & ExternOpt;
 
 export type CmdInfo = { id: string; name: string };
 

@@ -46,6 +46,7 @@ export async function listCmd() {
 
   const item = await window.showQuickPick(input_list, {
     placeHolder: 'select cmd to run',
+    matchOnDetail: true,
   });
 
   const cur_item = all_list.find(cmd_item => {

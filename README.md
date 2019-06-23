@@ -1,31 +1,46 @@
 ## cmdFlow
 
-use markdown organize cmd,
+![demo1](./images/demo.gif)
+
+在 vscode terminal 中一条接一条运行 cmd.
+(run cmd in vscode terminal one by one, use markdown organize cmd.)
 
 ## setting
 
--   `"cmdFlow.globalFile": string` 全局配置文件路径(global file path for cmd flow)
+-   `"cmdFlow.globalFile": string` 全局配置文件路径(global setting file path)
 
--   `"cmdFlow.workspaceFile": string` workspace 中每一个文件夹配置文件相对路径(workspace file path relative to workspace folder)
+-   `"cmdFlow.workspaceFile": string` workspace 中每一个文件夹配置文件相对路径(setting file inside workspace folder)
 
 ## command
 
 -   cmdFlow.listFile 解析所有配置文件(list all file for cmdFlow)
 -   cmdFlow.listCmd 解析所有配置文件中的命令(list all cmd in cmdFlow.listFile)
 
-## 配置 config
-
-config 分为两部分 terminal 配置+执行命令
-terminal 设置是放在 json code 中,
-使用格式是 [TerminalOptions](https://code.visualstudio.com/docs/extensionAPI/vscode-api#TerminalOptions)
-额外的配置 completeClose,如果设置为 true 执行完成之后就自动关闭 terminal
-
-执行命令放在 bash 中, 通过行来分割, 使用 terminal sendText api.
-现在 vscode 没有提供 api 监听 terminal 的运行状态, 我只能监听 onDidWriteData,
-如果一定时间 terminal 没有 output, 就认为 terminal 是空闲状态, 就执行下一条命令
-wait(time: 单位秒)来表示命令需要等待的时间,你如果命令很长时间没有 output 建议将设置长些...
+## config
 
 [demo](./doc/cmd.md)
 
-![demo1](./images/demo1.png)
-![demo2](./images/demo2.png)
+### terminalOption
+
+```ts
+export type CmdOPt = TerminalOptions & {
+    /** 运行完成是否自动关闭(auto close when complete run a cmd) */
+    completeClose?: boolean;
+    /** 是否隐藏(is hide terminal when run cmd) */
+    hide?: boolean;
+    /** 是否先执行其他命令 (is run other cmd before) */
+    before?: string[];
+    /** 是否通过task来执行  (is run cmd through task just like workbench.action.tasks.runTask) */
+    is_task?: boolean;
+};
+```
+
+### cmdList
+
+...
+
+## 原理
+
+vscode terminal 并没有 api 通知一条命令执行完成, 这个功能是通过监听 terminal 的输出来实现的, window 和 linux 的默认结束字符 `>` `$`, 如果监听到存在这两个字符结尾, 那么就是一条命令执行完毕;
+但是在某些情况下 terminal 的结束并不是以那两个字符结尾, 那么需要在的命令结尾加上`#waitStr(theWaitStr)`
+(vscode doesn't provide api to notify when run cmd complete, this extension listen terminal output(onDidWriteData), it decide end when find output end with end char `>` `$` (windows or linux default terminal), terminal sometime desn't end with that two char, you need add `#waitStr(theWaitStr)` to end of the line, to tell cmfFlow what str is the end sign)

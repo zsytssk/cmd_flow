@@ -1,8 +1,17 @@
--   @bug 第一次运行无法打开
+-   @todo 注释
+    -   webpack
 
--   [activityBar] 如何在侧边栏显示...
+## cmd flow
 
--   @ques 怎么为 已经打开的 terminal 设置 sort
+-   showQuickPick:> show num
+
+*   @bug 第一次运行无法打开
+
+    -   No editors associated with document: d:\zsytssk\github\note\cmd.md
+
+*   [activityBar] 如何在侧边栏显示...
+
+*   @ques 怎么为 已经打开的 terminal 设置 sort
     -   直接 vscode..terminals 这里面的顺序...
     -   sort
 

@@ -1,28 +1,24 @@
 import { QuickPickItem, window, workspace } from 'vscode';
 import { extension_name } from './const';
 import { GroupCmdInfo } from './model/cmdGroup';
-import {
-  CmdManager,
-  DefaultCmdManager,
-} from './model/cmdManager';
+import { initState, state } from './model/state';
 import { RecentItem } from './recent';
 import {
   getActiveTerminals,
   TerminalItem,
 } from './utils/terminal';
 
-const cmd_manager = new CmdManager();
 type QuickItemCmdFlow = QuickPickItem & {
   sort: number;
   name: string;
   group: string;
 };
 export async function listCmd() {
-  const behave = cmd_manager.getBehaveByCtor(
-    DefaultCmdManager,
-  );
+  console.log(`------------------test`);
+  initState();
+  const { cmd_manager_behave } = state;
+  const cmd_list = await cmd_manager_behave.getAllCmd();
   let all_list: RecentItem[] = [];
-  const cmd_list = await behave.getAllCmd();
   if (!cmd_list.length) {
     window.showInformationMessage(
       `${extension_name}:>Cant find cmd_flow in cur file and global file !`,
@@ -60,19 +56,20 @@ export async function listCmd() {
     (cur_item as TerminalItem).terminal.show();
     return;
   } else {
-    behave.execute((cur_item as GroupCmdInfo).id);
+    cmd_manager_behave.execute(
+      (cur_item as GroupCmdInfo).id,
+    );
   }
 }
 
 export async function listFile() {
-  const behave = cmd_manager.getBehaveByCtor(
-    DefaultCmdManager,
-  );
-  const files = await behave.getFiles();
+  initState();
+  const { cmd_manager_behave } = state;
+  const files = await cmd_manager_behave.getFiles();
 
   const input_list = [];
-  for (const file of files) {
-    const { name: label, file: description } = file;
+  for (const item_file of files) {
+    const { name: label, file: description } = item_file;
     input_list.push({ label, description });
   }
   const item = await window.showQuickPick(input_list, {

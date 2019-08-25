@@ -1,33 +1,35 @@
-import { getAllCmdFile, FileInfo } from '../utils/utils';
-import { CmdGroup, DefaultCmdGroup, GroupCmdInfo } from './cmdGroup';
-import { Behave, Model } from './dop';
-
-export class CmdManager extends Model {
-  public list: CmdGroup[] = [];
-  constructor() {
-    super();
-    this.addBehave(new DefaultCmdManager(this));
-  }
-}
+import {
+  FileInfo,
+  getAllCmdFile,
+  setProps,
+} from '../utils/utils';
+import { GroupCmdInfo } from './cmdGroup';
+import { CmdManager } from './model';
+import { state } from './state';
 
 type DefaultCmdManagerStatus = 'default' | 'going' | 'end';
 
-export class DefaultCmdManager extends Behave<CmdManager> {
-  private status: DefaultCmdManagerStatus = 'default';
+export class CmdManagerBehave {
+  private status = 'default' as DefaultCmdManagerStatus;
+  private model: CmdManager;
   public async init() {
+    const { cmd_group_behave } = state;
     this.status = 'going';
-    const { list } = this.model;
+    const model = new CmdManager();
+    const { list } = model;
     const files = await getAllCmdFile();
     for (const item of files) {
-      const group = new CmdGroup(this.model);
-      const behave = group.getBehaveByCtor(DefaultCmdGroup);
-      await behave.generate(item);
+      const group = await cmd_group_behave.generate(item);
       list.push(group);
     }
+    this.model = model;
     this.status = 'end';
   }
   private async update() {
-    this.setData({ list: [] });
+    const { model } = this;
+    if (model) {
+      setProps(model, { list: [] });
+    }
     await this.init();
   }
   public async getAllCmd(): Promise<GroupCmdInfo[]> {
@@ -39,12 +41,9 @@ export class DefaultCmdManager extends Behave<CmdManager> {
       await this.update();
     }
 
+    const { cmd_group_behave } = state;
     let result = [];
-    const { list } = this.model;
-    for (const item of list) {
-      const behave = item.getBehaveByCtor(DefaultCmdGroup);
-      result = result.concat(behave.getAllCmd());
-    }
+    result = result.concat(cmd_group_behave.getAllCmd());
     return result;
   }
   public async getFiles(): Promise<FileInfo[]> {
@@ -56,24 +55,14 @@ export class DefaultCmdManager extends Behave<CmdManager> {
       await this.update();
     }
 
-    const result = [];
-    const { list } = this.model;
-    for (const item of list) {
-      const behave = item.getBehaveByCtor(DefaultCmdGroup);
-      const file_info = behave.getFileInfo();
-      result.push(file_info);
-    }
-    return result;
+    const { cmd_group_behave } = state;
+    return cmd_group_behave.getFileInfo();
   }
   public async execute(id: string) {
-    const { list } = this.model;
-    for (const item of list) {
-      const behave = item.getBehaveByCtor(DefaultCmdGroup);
-      const is_executed = await behave.executeById(id);
-      if (is_executed) {
-        return true;
-      }
-    }
-    return false;
+    const { cmd_group_behave } = state;
+    const is_executed = await cmd_group_behave.executeById(
+      id,
+    );
+    return is_executed;
   }
 }

@@ -167,7 +167,7 @@ function watchTerminal(item: Item) {
     const { fun, code } = wait_info;
     const { wait_str } = code;
 
-    console.log(`test:>`, log);
+    // console.log(`test:>`, log);
 
     clearTimeout(timeout_check_idle);
     timeout_check_idle = setTimeout(() => {

@@ -9,11 +9,11 @@ import {
 import {
   analysisCodeStr,
   Code,
-  generateId,
+  setProps,
   sleep,
 } from '../utils/utils';
-import { CmdGroup, DefaultCmdGroup } from './cmdGroup';
-import { Behave, Model } from './dop';
+import { Cmd, CmdGroup } from './model';
+import { state } from './state';
 
 export type CmdOPt = TerminalOptions & {
   completeClose?: boolean;
@@ -29,27 +29,10 @@ export type CmdInfo = { id: string; name: string };
 
 export type Code = Code;
 
-export class Cmd extends Model {
-  public id: string;
-  public name: string;
-  public is_task: boolean;
-  public opt: TerminalOptions;
-  public hide: boolean;
-  public no_output: boolean;
-  public completeClose: boolean | number;
-  public before?: string[];
-  public codes?: Code[];
-  constructor(top?: Model) {
-    super(top);
-    this.addBehave(new DefaultCmd(this));
-  }
-}
-
-export class DefaultCmd extends Behave<Cmd> {
+export class CmdBehave {
   public generate(info: CmdSymbols) {
     const { name, opt_str, code_str } = info;
-
-    const id = generateId();
+    const cmd = this.createCmd(name);
 
     let opt: CmdOPt = {};
     try {
@@ -69,8 +52,8 @@ export class DefaultCmd extends Behave<Cmd> {
       name,
       ...opt,
     };
-    this.setData({
-      id,
+
+    setProps(cmd, {
       name,
       is_task,
       codes,
@@ -79,9 +62,16 @@ export class DefaultCmd extends Behave<Cmd> {
       before,
       completeClose,
     });
+
+    return cmd;
   }
-  public getInfo(): CmdInfo {
-    const { id, name, hide } = this.model;
+  private createCmd(name: string) {
+    const cmd = new Cmd();
+    setProps(cmd, { name });
+    return cmd;
+  }
+  public getInfo(model: Cmd): CmdInfo {
+    const { id, name, hide } = model;
     if (hide) {
       return;
     }
@@ -90,22 +80,20 @@ export class DefaultCmd extends Behave<Cmd> {
       name,
     };
   }
-  public async execute() {
+  public async execute(model: Cmd, group: CmdGroup) {
     const {
       codes,
       opt,
       completeClose,
       before,
       is_task,
-    } = this.model;
-    const top: CmdGroup = this.model.closest();
+    } = model;
+
+    const { cmd_group_behave } = state;
 
     if (before) {
-      const top_behave = top.getBehaveByCtor(
-        DefaultCmdGroup,
-      );
       for (const item_name of before) {
-        await top_behave.executeByName(item_name);
+        await cmd_group_behave.executeByName(item_name);
       }
     }
     if (is_task) {
@@ -116,7 +104,7 @@ export class DefaultCmd extends Behave<Cmd> {
       return;
     }
 
-    opt.name = `${opt.name} - ${top.name}`;
+    opt.name = `${opt.name} - ${group.name}`;
     const terminal = await createTerminal(opt);
     for (const code of codes) {
       await runCmd(terminal, code);

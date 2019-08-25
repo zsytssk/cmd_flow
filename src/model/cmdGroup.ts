@@ -1,27 +1,23 @@
 import { Uri, workspace } from 'vscode';
 import { getCmdListFromDoc } from '../utils/getCmdListFromDoc';
-import { FileInfo } from '../utils/utils';
-import { Cmd, CmdInfo, DefaultCmd } from './cmd';
-import { Behave, Model } from './dop';
+import { FileInfo, setProps } from '../utils/utils';
+import { CmdInfo } from './cmd';
+import { ModelMap } from './dop';
+import { Cmd, CmdGroup } from './model';
+import { state } from './state';
 
 export type GroupCmdInfo = CmdInfo & {
   group: string;
 };
-
-export class CmdGroup extends Model {
-  public list: Cmd[] = [];
-  public name: string;
-  public file: string;
-  constructor(top?: Model) {
-    super(top);
-    this.addBehave(new DefaultCmdGroup(this));
-  }
-}
-
-export class DefaultCmdGroup extends Behave<CmdGroup> {
+export class CmdGroupBehave {
+  private model_map: ModelMap<CmdGroup> = new Map();
   public async generate(info: FileInfo) {
-    const { model } = this;
-    const { list } = model;
+    const { model_map } = this;
+    const { cmd_behave } = state;
+    const cmd_group = new CmdGroup();
+
+    model_map.set('', cmd_group);
+    const { list } = cmd_group;
     const { file, name } = info;
     const uri = Uri.file(file);
     const doc = await workspace.openTextDocument(uri);
@@ -29,59 +25,74 @@ export class DefaultCmdGroup extends Behave<CmdGroup> {
 
     try {
       for (const item of cmd_list) {
-        const cmd = new Cmd(model);
-        const behave = cmd.getBehaveByCtor(DefaultCmd);
-        behave.generate(item);
+        const cmd = cmd_behave.generate(item);
         list.push(cmd);
       }
-      this.setData({ name, file });
+      setProps(cmd_group, { name, file });
     } catch (error) {
       console.log(error);
     }
+
+    return cmd_group;
   }
   public getAllCmd(): GroupCmdInfo[] {
+    const { cmd_behave } = state;
+    const { model_map } = this;
     const result = [];
-    const { list, name: group } = this.model;
-    for (const item of list) {
-      const behave = item.getBehaveByCtor(DefaultCmd);
-      const info = behave.getInfo();
-      if (!info) {
-        continue;
+    for (const [name, item_group] of model_map) {
+      const { list } = item_group;
+      for (const item of list) {
+        const info = cmd_behave.getInfo(item);
+        if (!info) {
+          continue;
+        }
+        result.push({
+          ...info,
+          group: name,
+        });
       }
-      result.push({
-        ...info,
-        group,
-      });
     }
     return result;
   }
-  public getFileInfo(): FileInfo {
-    const { name, file } = this.model;
-    return { name, file };
+  public getFileInfo(): FileInfo[] {
+    const list = [] as FileInfo[];
+    for (const [name, group] of this.model_map) {
+      list.push({ name, file: group.file });
+    }
+    return list;
   }
   public async executeByName(name: string) {
-    const { list } = this.model;
-    for (const item of list) {
-      const { name: item_name } = item;
-      if (name !== item_name) {
-        continue;
-      }
-      const behave = item.getBehaveByCtor(DefaultCmd);
-      await behave.execute();
+    const { cmd_behave } = state;
+    const result = this.findCmdBy(match_item => {
+      return match_item.name === name;
+    });
+    if (result) {
+      await cmd_behave.execute(...result);
       return true;
     }
-    return;
+    return false;
   }
   public async executeById(id: string) {
-    const { list } = this.model;
-    for (const item of list) {
-      const { id: item_id } = item;
-      if (item_id !== id) {
-        continue;
-      }
-      const behave = item.getBehaveByCtor(DefaultCmd);
-      await behave.execute();
+    const { cmd_behave } = state;
+    const result = this.findCmdBy(match_item => {
+      return match_item.id === id;
+    });
+    if (result) {
+      await cmd_behave.execute(...result);
       return true;
+    }
+    return false;
+  }
+  private findCmdBy(
+    match_fun: (cmd: Cmd) => boolean,
+  ): [Cmd, CmdGroup] {
+    for (const [, item_group] of this.model_map) {
+      const { list } = item_group;
+      for (const item of list) {
+        if (match_fun(item)) {
+          return [item, item_group];
+        }
+      }
     }
     return;
   }

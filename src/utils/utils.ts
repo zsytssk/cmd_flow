@@ -140,3 +140,12 @@ export function sleep(time) {
     }, time * 1000);
   });
 }
+
+export function setProps<T>(obj: T, props: Partial<T>) {
+  for (const key in props) {
+    if (!props.hasOwnProperty(key)) {
+      continue;
+    }
+    obj[key] = props[key];
+  }
+}

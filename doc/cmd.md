@@ -4,7 +4,8 @@
 
 ```json
 {
-    "name": "test"
+    "name": "test",
+    "completeClose": true
 }
 ```
 

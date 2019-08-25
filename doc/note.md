@@ -3,7 +3,12 @@
     -   webpack
 
 -   @bug win10 没法监听任务结束
-    -   cmd.exe 结尾会添加 ... ]0;C:\WINDOWS\System32\cmd.exe
+
+    -   cmd.exe 结尾会添加 ... ]0;C:\WINDOWS\System32\cmd.exe
+
+-   @面向对象的形式 组织
+
+*   @todo 使用 ecs 组织 代码
 
 ## cmd flow
 
